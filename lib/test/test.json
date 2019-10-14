@@ -1,0 +1,181 @@
+[
+    {
+        "move_ids": [
+            37
+        ],
+        "lot_id": false,
+        "company_id": [
+            1,
+            "YourCompany"
+        ],
+        "write_date": "2019-09-16 15:58:43",
+        "total_qty": 0,
+        "product_id": false,
+        "line_ids": [
+            30
+        ],
+        "category_id": false,
+        "date": "2019-09-16 15:58:29",
+        "filter": "partial",
+        "__last_update": "2019-09-16 15:58:43",
+        "state": "done",
+        "create_date": "2019-09-16 15:57:13",
+        "package_id": false,
+        "exhausted": true,
+        "location_id": [
+            16,
+            "WH/Stock"
+        ],
+        "name": "Inventario Prueba",
+        "create_uid": [
+            2,
+            "Mitchell Admin"
+        ],
+        "partner_id": false,
+        "write_uid": [
+            2,
+            "Mitchell Admin"
+        ],
+        "display_name": "Inventario Prueba",
+        "id": 10
+    },
+    {
+        "move_ids": [
+            35,
+            36
+        ],
+        "lot_id": false,
+        "company_id": [
+            1,
+            "YourCompany"
+        ],
+        "write_date": "2019-09-16 15:39:21",
+        "total_qty": 0,
+        "product_id": false,
+        "line_ids": [
+            13,
+            15
+        ],
+        "category_id": false,
+        "date": "2019-09-15 12:56:23",
+        "filter": "partial",
+        "__last_update": "2019-09-16 15:39:21",
+        "state": "done",
+        "create_date": "2019-09-15 12:20:28",
+        "package_id": false,
+        "exhausted": false,
+        "location_id": [
+            16,
+            "WH/Stock"
+        ],
+        "name": "Inventario Inicial",
+        "create_uid": [
+            2,
+            "Mitchell Admin"
+        ],
+        "partner_id": false,
+        "write_uid": [
+            2,
+            "Mitchell Admin"
+        ],
+        "display_name": "Inventario Inicial",
+        "id": 3
+    },
+    {
+        "move_ids": [],
+        "lot_id": false,
+        "company_id": [
+            1,
+            "YourCompany"
+        ],
+        "write_date": "2019-09-15 12:17:09",
+        "total_qty": 0,
+        "product_id": false,
+        "line_ids": [
+            11,
+            12
+        ],
+        "category_id": false,
+        "date": "2019-09-11 23:16:10",
+        "filter": "partial",
+        "__last_update": "2019-09-15 12:17:09",
+        "state": "draft",
+        "create_date": "2019-09-11 23:16:00",
+        "package_id": false,
+        "exhausted": false,
+        "location_id": [
+            16,
+            "WH/Stock"
+        ],
+        "name": "Inventory for Cable Management Box",
+        "create_uid": [
+            1,
+            "OdooBot"
+        ],
+        "partner_id": false,
+        "write_uid": [
+            2,
+            "Mitchell Admin"
+        ],
+        "display_name": "Inventory for Cable Management Box",
+        "id": 2
+    },
+    {
+        "move_ids": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10
+        ],
+        "lot_id": false,
+        "company_id": [
+            1,
+            "YourCompany"
+        ],
+        "write_date": "2019-09-11 23:16:00",
+        "total_qty": 0,
+        "product_id": false,
+        "line_ids": [
+            4,
+            3,
+            5,
+            6,
+            7,
+            8,
+            1,
+            9,
+            2,
+            10
+        ],
+        "category_id": false,
+        "date": "2019-09-11 23:16:08",
+        "filter": "none",
+        "__last_update": "2019-09-11 23:16:00",
+        "state": "done",
+        "create_date": "2019-09-11 23:16:00",
+        "package_id": false,
+        "exhausted": false,
+        "location_id": [
+            16,
+            "WH/Stock"
+        ],
+        "name": "Starting Inventory",
+        "create_uid": [
+            1,
+            "OdooBot"
+        ],
+        "partner_id": false,
+        "write_uid": [
+            1,
+            "OdooBot"
+        ],
+        "display_name": "Starting Inventory",
+        "id": 1
+    }
+]
