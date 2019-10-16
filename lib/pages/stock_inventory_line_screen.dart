@@ -94,7 +94,7 @@ class _StockInventoryLineListViewState
   }
 
   getOdooStockInventoryLine() async {
-    client = new OdooClient('http://192.168.56.1:8069');
+    client = new OdooClient('http://10.10.201.124:8069');
     await client.connect().then((OdooVersion version) {
       // print(version);
     });

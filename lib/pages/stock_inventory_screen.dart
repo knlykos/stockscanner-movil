@@ -89,7 +89,7 @@ class _StockInventoryListViewState extends State<StockInventoryListView> {
   @override
   void initState() {
     this.data = [];
-    client = new OdooClient('http://192.168.56.1:8069');
+    client = new OdooClient('http://10.10.201.124:8069');
     client.connect().then((OdooVersion version) {
       // print(version);
     });
@@ -113,10 +113,10 @@ class _StockInventoryListViewState extends State<StockInventoryListView> {
             final dataOdoo = result.getResult();
             // print(dataOdoo['length']);
             setState(() {
-            this.data = dataOdoo['records'];
+              this.data = dataOdoo['records'];
             });
             print(this.data[0]['id']);
-            
+
             // Map mapData = jsonDecode(this.data);
             // print(mapData);
           } else {

@@ -9,27 +9,62 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  OdooClient client;
+  final odooUrl = TextEditingController();
+  final odooUser = TextEditingController();
+  final odooPassword = TextEditingController();
+  final odooDB = TextEditingController();
+  String dbSelected;
+  List odooDBList;
+  @override
+  void initState() {
+    this.dbSelected = null;
+    this.odooDBList = [''];
+
+    super.initState();
+  }
+
+  odooAuth() {
+    client = new OdooClient(odooUrl.text);
+    client.connect().then((OdooVersion version) {
+      print(version);
+    });
+    client.getDatabases().then((List databases) {
+      setState(() {
+        print(databases);
+        this.odooDBList = databases;
+        print({'LISTA DB: ', this.odooDBList});
+      });
+    });
+  }
+
+  void loginOdoo() {
+    var client = new OdooClient(odooUrl.text);
+    client.connect().then((OdooVersion version) {
+      print(version);
+    });
+    // client.getDatabases().then((List databases) {
+    //   setState(() {
+    //     this.odooDBList = databases;
+    //   });
+    // });
+    print(odooUrl.text);
+    print(odooUser.text);
+    print(odooPassword.text);
+    print(dbSelected);
+    client
+        .authenticate(odooUser.text, odooPassword.text, dbSelected)
+        .then((AuthenticateCallback auth) {
+      if (auth.isSuccess) {
+        print(auth.getUser());
+      } else {
+        print('nel');
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    final lusernameController = TextEditingController();
-    final lpasswordController = TextEditingController();
-
-    void loginOdoo() {
-      var client = new OdooClient('http://192.168.56.1:8069');
-      client.connect().then((OdooVersion version) {
-        print(version);
-      });
-      client
-          .authenticate(
-              lusernameController.text, lpasswordController.text, 'demo')
-          .then((AuthenticateCallback auth) {
-        if (auth.isSuccess) {
-          print(auth.getUser());
-        } else {
-          print('nel');
-        }
-      });
-    }
     // final GlobalKey<ScaffoldState> _scaffoldKey =
     //     new GlobalKey<ScaffoldState>();
 
@@ -49,13 +84,49 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
             TextFormField(
-              controller: lusernameController,
+              controller: odooUrl,
+              obscureText: false,
+              keyboardType: TextInputType.emailAddress,
+              decoration: InputDecoration(
+                  hintText: 'URL',
+                  suffixIcon: IconButton(
+                    icon: Icon(Icons.refresh),
+                    onPressed: () {
+                      odooAuth();
+                    },
+                  )),
+              onSaved: (e) {
+                print(e);
+              },
+            ),
+            DropdownButton<dynamic>(
+              isExpanded: true,
+              value: this.dbSelected,
+              icon: Icon(Icons.keyboard_arrow_down),
+              iconSize: 24,
+              elevation: 16,
+              onChanged: (dynamic newValue) {
+                setState(() {
+                  this.dbSelected = newValue;
+                });
+              },
+              items: this
+                  .odooDBList
+                  .map<DropdownMenuItem<dynamic>>((dynamic value) {
+                return DropdownMenuItem<dynamic>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
+            ),
+            TextFormField(
+              controller: odooUser,
               obscureText: false,
               keyboardType: TextInputType.emailAddress,
               decoration: InputDecoration(hintText: 'Usuario'),
             ),
             TextFormField(
-              controller: lpasswordController,
+              controller: odooPassword,
               obscureText: true,
               keyboardType: TextInputType.visiblePassword,
               decoration: InputDecoration(hintText: 'Contraseña'),
