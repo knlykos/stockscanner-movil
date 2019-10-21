@@ -55,7 +55,7 @@ class StockInventoryLineScreen extends StatelessWidget {
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.add),
         onPressed: () {
-          print('hola');
+          // print('hola');
         },
       ),
     );
@@ -94,7 +94,7 @@ class _StockInventoryLineListViewState
   }
 
   getOdooStockInventoryLine() async {
-    client = new OdooClient('http://10.10.201.124:8069');
+    client = new OdooClient('https://odoo.nkodexsoft.com');
     await client.connect().then((OdooVersion version) {
       // print(version);
     });
@@ -106,7 +106,7 @@ class _StockInventoryLineListViewState
         final domain = [
           ['inventory_id', '=', widget.inventoryId]
         ];
-        print(domain);
+        // print(domain);
         final fields = null;
         await client
             .searchRead(
@@ -143,7 +143,7 @@ class _StockInventoryLineListViewState
                   // print(productOdoo);
                   // print({'product', this.data[i]["product"]});
                 } else {
-                  print(result.getError());
+                  // print(result.getError());
                 }
                 // print(result);
               });
@@ -151,11 +151,11 @@ class _StockInventoryLineListViewState
 
             // client.searchRead('product.product', [['id', '=', this.data[]]], fields)
           } else {
-            print(result.getError());
+            // print(result.getError());
           }
         });
       } else {
-        print('nel');
+        // print('nel');
       }
     });
   }

@@ -4,23 +4,23 @@ import 'package:stockscanner/pages/home_page.dart';
 import 'package:stockscanner/pages/login.dart';
 import 'package:stockscanner/pages/stock_inventory_line_screen.dart';
 import 'package:stockscanner/pages/stock_inventory_screen.dart';
+import 'package:stockscanner/provider/login_provider.dart';
 import 'package:stockscanner/provider/stock_inventory.dart';
 import 'package:stockscanner/provider/stock_inventory_line.dart';
 
 void main() {
-  runApp(MyApp()
-      // MultiProvider(
-      //   providers: [
-      //     ChangeNotifierProvider(
-      //       builder: (context) => StockInventoryProvider(),
-      //     ),
-      //     ChangeNotifierProvider(
-      //       builder: (context) => StockInventoryLineProvider(),
-      //     ),
-      //   ],
-      //   child: MyApp(),
-      // ),
-      );
+  runApp(MultiProvider(
+    providers: [
+      ChangeNotifierProvider(builder: (context) => LoginProvider()),
+      ChangeNotifierProvider(
+        builder: (context) => StockInventoryProvider(),
+      ),
+      ChangeNotifierProvider(
+        builder: (context) => StockInventoryLineProvider(),
+      ),
+    ],
+    child: MyApp(),
+  ));
 }
 
 class MyApp extends StatelessWidget {
@@ -29,8 +29,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
         title: 'Flutter Demo',
-        initialRoute: '/stockInventory',
-        routes: {
+        initialRoute: '/',
+        routes: { 
           // '/stockInventoryLine': (context) => StockInventoryLineScreen(),
           // '/': (context) => StockInventoryScreen(),
           '/': (context) => LoginScreen(),

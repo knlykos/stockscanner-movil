@@ -18,10 +18,10 @@ class StockInventoryProvider extends ChangeNotifier {
   /// Añadir [item] al carro. Esta es la única manera de modificar el carrito desde fuera.
   void getStockInventory() async {
     final response =
-        await http.get('http://192.168.56.1:3000/stock-inventory?limit=0&offset=0');
+        await http.get('https://odoo.nkodexsoft.com/stock-inventory?limit=0&offset=0');
     final responseJson = json.decode(response.body);
     final responseApi = ResponseApi.fromJson(responseJson);
-    print(responseApi);
+    // print(responseApi);
     this._items = responseApi.data
         .map((model) => StockInventory.fromJson(model))
         .toList();

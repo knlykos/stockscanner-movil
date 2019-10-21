@@ -9,5 +9,5 @@ void main() async {
 
     Iterable l = json.decode(response.body);
     var lete = l.map((dynamic model) => StockInventory.fromJson(model)).toList();
-    print(lete[1].moveIds);
+    // print(lete[1].moveIds);
 }
