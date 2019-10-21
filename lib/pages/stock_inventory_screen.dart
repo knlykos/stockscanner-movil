@@ -19,7 +19,7 @@ class StockInventoryScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Ajuste de Inventario'),
+        title: Text('Ordenes'),
       ),
       body: StockInventoryListView(),
       floatingActionButton: FloatingActionButton(
@@ -81,37 +81,9 @@ class _ScannerInputKeysState extends State<ScannerInputKeys> {
 
 class StockInventoryListView extends StatelessWidget {
   // OdooClient client;
-  List<dynamic> data;
 
   @override
   Widget build(BuildContext context) {
-    // final loginProvider = Provider.of<LoginProvider>(context);
-    void getStockInventory() {
-      // final domain = [
-      //   ['state', '=', 'confirm']
-      // ];
-      // final fields = null;
-      // Provider.of<LoginProvider>(context)
-      //     .searchRead('stock.inventory', domain, fields);
-      // print(Provider.of<LoginProvider>(context).response);
-      // loginProvider.odooClient
-      //     .searchRead('stock.inventory', domain, fields)
-      //     .then((OdooResponse result) {
-      //   if (!result.hasError()) {
-      //     final dataOdoo = result.getResult();
-      //     // print(dataOdoo['length']);
-
-      //     print(this.data[0]['id']);
-
-      //     // Map mapData = jsonDecode(this.data);
-      //     // print(mapData);
-      //   } else {
-      //     print(result.getError());
-      //   }
-      // });
-    }
-
-    // return Container();
     return Consumer<LoginProvider>(
       builder: (context, server, child) {
         final domain = [
@@ -119,30 +91,27 @@ class StockInventoryListView extends StatelessWidget {
         ];
         final fields = null;
         server.searchRead('stock.inventory', domain, fields);
-        // response.notifyListeners();
-        // final dynamic odooResponse = response.response.getResult();
-        // print(response.response.getResult());
-        // this.data = odooResponse['records'];
-        return Container();
-        //   return ListView.builder(
-        //     itemCount: data.length,
-        //     itemBuilder: (context, index) {
-        //       return ListTile(
-        //         trailing: Icon(Icons.chevron_right),
-        //         title: Text(this.data[index]['name']),
-        //         subtitle: Text(new DateFormat.MMMMEEEEd()
-        //             .format(DateTime.parse(data[index]['date']))),
-        //         onTap: () {
-        //           Navigator.push(
-        //               context,
-        //               MaterialPageRoute(
-        //                   builder: (context) => StockInventoryLineScreen(
-        //                         inventoryId: data[index]['id'],
-        //                       )));
-        //         },
-        //       );
-        //     },
-        //   );
+        return server.response.length == null || server.response.length == 0
+            ? Container()
+            : ListView.builder(
+                itemCount: server.response.length,
+                itemBuilder: (context, index) {
+                  return ListTile(
+                    trailing: Icon(Icons.chevron_right),
+                    title: Text(server.response[index]['name']),
+                    subtitle: Text(new DateFormat.MMMMEEEEd().format(
+                        DateTime.parse(server.response[index]['date']))),
+                    onTap: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => StockInventoryLineScreen(
+                                    inventoryId: server.response[index]['id'],
+                                  )));
+                    },
+                  );
+                },
+              );
       },
     );
   }

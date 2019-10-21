@@ -5,7 +5,7 @@ import 'package:odoo_api/odoo_user_response.dart';
 
 class LoginProvider with ChangeNotifier {
   OdooClient _odooClient;
-  OdooResponse _response;
+  dynamic _response = [];
   OdooClient get odooClient {
     return _odooClient;
   }
@@ -18,11 +18,11 @@ class LoginProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  OdooResponse get response {
-    return response;
+  dynamic get response {
+    return _response;
   }
 
-  set response(OdooResponse response) {
+  set response(dynamic response) {
     _response = response;
     notifyListeners();
   }
@@ -112,6 +112,8 @@ class LoginProvider with ChangeNotifier {
   void searchRead(String model, dynamic domain, dynamic fields) async {
     // odooClient.connect().then((onValue) => {onValue.getVersionInfo()});
     var data = await odooClient.searchRead(model, domain, fields);
+    // print(data.getResult());
+    response = data.getResult()['records'];
     // print(data);
   }
 }
