@@ -30,8 +30,8 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
         title: 'Flutter Demo',
         initialRoute: '/',
-        routes: { 
-          // '/stockInventoryLine': (context) => StockInventoryLineScreen(),
+        routes: {
+          '/stockInventoryLine': (context) => StockInventoryLineScreen(),
           // '/': (context) => StockInventoryScreen(),
           '/': (context) => LoginScreen(),
           '/stockInventory': (context) => StockInventoryScreen()

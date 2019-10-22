@@ -5,9 +5,19 @@ import 'package:odoo_api/odoo_user_response.dart';
 
 class LoginProvider with ChangeNotifier {
   OdooClient _odooClient;
-  dynamic _response = [];
+  List<dynamic> _response = [];
+  List<dynamic> _product = [];
   OdooClient get odooClient {
     return _odooClient;
+  }
+
+  List<dynamic> get product {
+    return _product;
+  }
+
+  set product(List<dynamic> product) {
+    _product = product;
+    // notifyListeners();
   }
 
   set odooClient(OdooClient odooClient) {
@@ -18,13 +28,13 @@ class LoginProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  dynamic get response {
+  List<dynamic> get response {
     return _response;
   }
 
-  set response(dynamic response) {
+  set response(List<dynamic> response) {
     _response = response;
-    notifyListeners();
+    // notifyListeners();
   }
 
   // List<dynamic> _databases;
@@ -109,11 +119,12 @@ class LoginProvider with ChangeNotifier {
     return await odooClient.authenticate(_userDb, _passwordDb, _selectedDb);
   }
 
-  void searchRead(String model, dynamic domain, dynamic fields) async {
+  Future<OdooResponse> searchRead(
+      String model, dynamic domain, dynamic fields) async {
     // odooClient.connect().then((onValue) => {onValue.getVersionInfo()});
-    var data = await odooClient.searchRead(model, domain, fields);
+
+    return await odooClient.searchRead(model, domain, fields);
     // print(data.getResult());
-    response = data.getResult()['records'];
-    // print(data);
+    // print(response);
   }
 }

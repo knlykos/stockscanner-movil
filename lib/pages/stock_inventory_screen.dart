@@ -90,9 +90,15 @@ class StockInventoryListView extends StatelessWidget {
           ['state', '=', 'confirm']
         ];
         final fields = null;
-        server.searchRead('stock.inventory', domain, fields);
+        server.searchRead('stock.inventory', domain, fields).then((onValue) {
+          server.response = onValue.getResult()['records'];
+          print(server.response);
+          server.notifyListeners();
+        });
         return server.response.length == null || server.response.length == 0
-            ? Container()
+            ? Container(
+                child: Text('Cargando'),
+              )
             : ListView.builder(
                 itemCount: server.response.length,
                 itemBuilder: (context, index) {
