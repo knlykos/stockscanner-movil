@@ -2,11 +2,14 @@ import 'package:flutter/foundation.dart';
 import 'package:odoo_api/odoo_api.dart';
 import 'package:odoo_api/odoo_api_connector.dart';
 import 'package:odoo_api/odoo_user_response.dart';
-import 'package:stockscanner/api/server.dart';
 
-class LoginProvider with ChangeNotifier {
+class ServerApi {
+  OdooClient _odooClient;
   List<dynamic> _response = [];
   List<dynamic> _product = [];
+  OdooClient get odooClient {
+    return _odooClient;
+  }
 
   List<dynamic> get product {
     return _product;
@@ -15,6 +18,13 @@ class LoginProvider with ChangeNotifier {
   set product(List<dynamic> product) {
     _product = product;
     // notifyListeners();
+  }
+
+  set odooClient(OdooClient odooClient) {
+    if (odooClient == null) {
+      throw new ArgumentError();
+    }
+    _odooClient = odooClient;
   }
 
   List<dynamic> get response {
@@ -37,7 +47,6 @@ class LoginProvider with ChangeNotifier {
       throw new ArgumentError();
     }
     _userDb = user;
-    notifyListeners();
   }
 
   String _passwordDb;
@@ -51,7 +60,6 @@ class LoginProvider with ChangeNotifier {
       throw new ArgumentError();
     }
     _passwordDb = password;
-    notifyListeners();
   }
 
   String _selectedDb;
@@ -64,7 +72,6 @@ class LoginProvider with ChangeNotifier {
       throw new ArgumentError();
     }
     _selectedDb = selected;
-    notifyListeners();
   }
 
   int _userUid;
@@ -84,7 +91,6 @@ class LoginProvider with ChangeNotifier {
       throw new ArgumentError();
     }
     _auth = auth;
-    notifyListeners();
   }
 
   set uid(int uid) {
@@ -92,25 +98,21 @@ class LoginProvider with ChangeNotifier {
       throw new ArgumentError();
     }
     _userUid = uid;
-    notifyListeners();
   }
 
   Future<List<dynamic>> getDatabases(String serverURL) async {
-    var serverApi = new ServerApi();
-
-    return serverApi.getDatabases(serverURL);
+    odooClient = new OdooClient(serverURL);
+    return await odooClient.getDatabases();
   }
 
-  Future<AuthenticateCallback> serverAuth(userDb, password, selectedDb) async {
-    // return await odooClient.authenticate(_userDb, _passwordDb, _selectedDb);
+  Future<AuthenticateCallback> serverAuth() async {
+    return await odooClient.authenticate(_userDb, _passwordDb, _selectedDb);
   }
 
   Future<OdooResponse> searchRead(
       String model, dynamic domain, dynamic fields) async {
     // odooClient.connect().then((onValue) => {onValue.getVersionInfo()});
 
-    // return await odooClient.searchRead(model, domain, fields);
-    // print(data.getResult());
-    // print(response);
+    return await odooClient.searchRead(model, domain, fields);
   }
 }
