@@ -4,8 +4,9 @@ import 'package:odoo_api/odoo_api.dart';
 import 'package:odoo_api/odoo_user_response.dart';
 import 'package:odoo_api/odoo_version.dart';
 import 'package:provider/provider.dart';
+import 'package:stockscanner/api/server_api.dart';
 import 'package:stockscanner/pages/stock_inventory_screen.dart';
-import 'package:stockscanner/provider/login_provider.dart';
+import 'package:stockscanner/provider/server_provider.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -29,63 +30,23 @@ class _LoginScreenState extends State<LoginScreen> {
     super.initState();
   }
 
-  odooAuth() {
-    // client = new OdooClient(odooUrl.text);
-    // client.connect().then((OdooVersion version) {
-    //   print(version);
-    // });
-    // client.getDatabases().then((List databases) {
-    //   setState(() {
-    //     print(databases);
-    //     this.odooDBList = databases;
-    //     print({'LISTA DB: ', this.odooDBList});
-    //   });
-    // });
-  }
-
-  // void loginOdoo() {
-  //   // var client = new OdooClient(odooUrl.text);
-  //   var client = new OdooClient(odooUrl.text);
-  //   client.connect().then((OdooVersion version) {
-  //     print(version);
-  //   });
-  //   // client.getDatabases().then((List databases) {
-  //   //   setState(() {
-  //   //     this.odooDBList = databases;
-  //   //   });
-  //   // });
-  //   print(odooUrl.text);
-  //   print(odooUser.text);
-  //   print(odooPassword.text);
-  //   print(dbSelected);
-  //   client
-  //       .authenticate(odooUser.text, odooPassword.text, dbSelected)
-  //       .then((AuthenticateCallback auth) {
-  //     if (auth.isSuccess) {
-  //       // print(auth.getUser());
-  //       storage.setItem('odooUser', odooUser.text);
-  //       storage.setItem('odooPassword', odooPassword.text);
-  //       // storage.setItem('', value)
-  //       print(auth.getUser().uid);
-  //     } else {
-  //       print('nel');
-  //     }
-  //   });
-  // }
-
   @override
   Widget build(BuildContext context) {
+    final serverProvider = Provider.of<ServerProvider>(context);
+
     final snackBar = SnackBar(
         content: Text('Verifique sus credenciales'),
         action: SnackBarAction(
           label: 'REINTENTAR',
           onPressed: () {},
         ));
-    final loginProvider = Provider.of<LoginProvider>(context);
 
     void getDatabaseList() async {
       try {
-        var dbs = await loginProvider.getDatabases(odooUrl.text);
+        var server = new ServerApi(odooUrl.text);
+        var dbs = await server.getDatabases();
+
+        print(dbs);
         setState(() {
           this.odooDBList = dbs;
         });
@@ -94,17 +55,18 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     }
 
-    Future<bool> serverAuth() async {
-      loginProvider.selectedDb = this.dbSelected;
-      loginProvider.password = this.odooPassword.text;
-      loginProvider.user = this.odooUser.text;
-
-      var data = await loginProvider.serverAuth();
-      loginProvider.auth = data;
-      return loginProvider.auth.isSuccess;
-    }
     // final GlobalKey<ScaffoldState> _scaffoldKey =
     //     new GlobalKey<ScaffoldState>();
+    serverAuth() async {
+      var server = new ServerApi(odooUrl.text);
+      var authCallback =
+          await server.auth(odooUser.text, odooPassword.text, dbSelected);
+      serverProvider.setAuthParams(
+          odooUser.text, odooPassword.text, dbSelected);
+      serverProvider.serverUrl = odooUrl.text;
+      print({'isSuccess', authCallback.isSuccess});
+      serverProvider.isAuth = authCallback.isSuccess;
+    }
 
     return Scaffold(body: Builder(
       builder: (context) {
@@ -184,7 +146,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       child: Text('Login'),
                       onPressed: () async {
-                        if (await serverAuth()) {
+                        await serverAuth();
+                        if (serverProvider.isAuth) {
                           Navigator.push(
                               context,
                               MaterialPageRoute(

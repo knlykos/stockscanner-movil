@@ -4,19 +4,14 @@ import 'package:stockscanner/pages/home_page.dart';
 import 'package:stockscanner/pages/login.dart';
 import 'package:stockscanner/pages/stock_inventory_line_screen.dart';
 import 'package:stockscanner/pages/stock_inventory_screen.dart';
-import 'package:stockscanner/provider/login_provider.dart';
-import 'package:stockscanner/provider/stock_inventory.dart';
-import 'package:stockscanner/provider/stock_inventory_line.dart';
+import 'package:stockscanner/provider/server_provider.dart';
+
 
 void main() {
   runApp(MultiProvider(
     providers: [
-      ChangeNotifierProvider(builder: (context) => LoginProvider()),
-      ChangeNotifierProvider(
-        builder: (context) => StockInventoryProvider(),
-      ),
-      ChangeNotifierProvider(
-        builder: (context) => StockInventoryLineProvider(),
+      ChangeNotifierProvider.value(
+        value: ServerProvider(),
       ),
     ],
     child: MyApp(),
