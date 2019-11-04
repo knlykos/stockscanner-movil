@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:stockscanner/pages/add_product.dart';
 import 'package:stockscanner/pages/home_page.dart';
 import 'package:stockscanner/pages/login.dart';
 import 'package:stockscanner/pages/stock_inventory_line_screen.dart';
@@ -29,7 +30,8 @@ class MyApp extends StatelessWidget {
           '/stockInventoryLine': (context) => StockInventoryLineScreen(),
           // '/': (context) => StockInventoryScreen(),
           '/': (context) => LoginScreen(),
-          '/stockInventory': (context) => StockInventoryScreen()
+          '/stockInventory': (context) => StockInventoryScreen(),
+          '/addProduct': (context) => AddProductScreen(),
         },
         theme: ThemeData(primarySwatch: Colors.indigo));
   }

@@ -7,6 +7,8 @@ import 'package:odoo_api/odoo_api_connector.dart';
 import 'package:odoo_api/odoo_user_response.dart';
 import 'package:odoo_api/odoo_version.dart';
 import 'package:provider/provider.dart';
+import 'package:stockscanner/pages/add_product.dart';
+import 'package:stockscanner/pages/update_product.dart';
 import 'package:stockscanner/provider/server_provider.dart';
 
 class StockInventoryLineScreen extends StatelessWidget {
@@ -16,50 +18,13 @@ class StockInventoryLineScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Provider.of<StockInventoryLineProvider>(context, listen: false)
-    //     .getStockInventoryLine(this.inventoryId);
-    // var data = Provider.of<StockInventoryLineProvider>(context, listen: false)
-    //     .stockInventoryLine;
-    // print(data);
-
-    // Image imageFromBase64String(String base64String) {
-    //   return Image.memory(base64Decode(base64String));
-    // }
-
-    // Widget ListProducts = ListView.builder(
-    //   itemCount: data.length,
-    //   itemBuilder: (context, index) {
-    //     return ListTile(
-    //       leading: CircleAvatar(
-    //         child: imageFromBase64String(data[index].products[0].image),
-    //         radius: 30.0,
-    //         backgroundColor: Colors.transparent,
-    //       ),
-    //       title: Text(data[index].products[0].name),
-    //       subtitle: Text('\$' + data[index].products[0].listPrice.toString()),
-    //       isThreeLine: false,
-    //       trailing: Icon(Icons.chevron_right),
-    //       onTap: () {
-    //         Navigator.push(
-    //             context, MaterialPageRoute(builder: (context) => HomePage()));
-    //       },
-    //     );
-    //   },
-    // );
-
     return Scaffold(
       appBar: AppBar(
-        title: Text('Detalle ajuste de inventario'),
+        title: Text('Inventario'),
       ),
       body: StockInventoryLineListView(
         inventoryId: inventoryId,
       ),
-      // floatingActionButton: FloatingActionButton(
-      //   child: Icon(Icons.add),
-      //   onPressed: () {
-      //     print('hola');
-      //   },
-      // ),
     );
   }
 }
@@ -82,6 +47,7 @@ class _StockInventoryLineListViewState
   TextEditingController searchController;
   ServerProvider serverProvider;
   Future<OdooResponse> productList;
+  FocusNode myFocusNode;
 
   Image imageFromBase64String(String base64String) {
     if (base64String != null) {
@@ -91,6 +57,7 @@ class _StockInventoryLineListViewState
 
   @override
   void initState() {
+    myFocusNode = FocusNode();
     this.data = [];
     products = [];
     length = 0;
@@ -98,6 +65,13 @@ class _StockInventoryLineListViewState
     searchController = new TextEditingController();
 
     super.initState();
+  }
+
+  void dispose() {
+    // Limpia el nodo focus cuando se haga dispose al formulario
+    myFocusNode.dispose();
+
+    super.dispose();
   }
 
   Future<OdooResponse> getOdooStockInventoryLine() async {
@@ -120,13 +94,6 @@ class _StockInventoryLineListViewState
         fields,
       );
       if (!res.hasError()) {
-        // if (!res.hasError()) {
-        // final dataOdoo = response.getResult();
-        // // print(dataOdoo['length']);
-        // this.data = dataOdoo['records'];
-        // print(this.data);
-        // this.data.map((f) => {print(f)});
-        // print({'ENTRIES', response.getResult()['records'].asMap().entries});
         print(res.getResult());
         for (var entry in res.getResult()['records'].asMap().entries) {
           // print({'entry', entry.value['inventory_id'][0]});
@@ -137,24 +104,9 @@ class _StockInventoryLineListViewState
           const fields = null;
           OdooResponse product =
               await client.searchRead('product.product', domain, fields);
-          // print(product.getResult());
           res.getResult()['records'][0]['product'] =
               product.getResult()['records'];
-          //   response.getResult()['records'][i]['product'] =
-          //       product.getResult()['records'];
-          //   print(response.getResult()['records'][i]['product']);
-          // });
-
-          // client.searchRead('product.product', [['id', '=', this.data[]]], fields)
         }
-        // response.getResult()['records'].asMap().forEach((i, v) async {
-        //   // products.add(v);
-        //   // response.getResult()['records'][i]['product'] = v;
-        //   // this.data[i]['product'] = v;
-
-        // } else {
-        //   // print(result.getError());
-        // }
         return res;
       } else {
         return res;
@@ -179,14 +131,14 @@ class _StockInventoryLineListViewState
                 return ListTile(
                   title: Text(records[index]['product'][0]['display_name']),
                   subtitle: Text(records[index]['product'][0]['create_date']),
-                  trailing: Icon(Icons.chevron_right),
+                  trailing: Icon(Icons.edit),
                   onTap: () {
                     Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => StockInventoryLineScreen(
-                                  inventoryId: records[index]['product'][0]
-                                      ['id'],
+                            builder: (context) => UpdateProductScreen(
+                                  productId: records[index]['product'][0]['id'],
+                                  title: records[index]['product'][0]['display_name'],
                                 )));
                   },
                 );
@@ -204,19 +156,89 @@ class _StockInventoryLineListViewState
           height: 30,
           color: Colors.grey,
           child: TextField(
-            decoration: InputDecoration(border: InputBorder.none),
             textAlign: TextAlign.center,
             controller: searchController,
             keyboardType: TextInputType.number,
+            style: TextStyle(fontSize: 15, height: 1),
+            focusNode: myFocusNode,
+            autofocus: true,
           ),
         ),
         Flexible(
           child: futureBuilder,
         ),
-        Container(
-          width: MediaQuery.of(context).size.width,
-          height: 30,
-          color: Colors.red,
+
+        // Container(
+        //   decoration: BoxDecoration(boxShadow: [
+        //     BoxShadow(
+        //         blurRadius: 5,
+        //         spreadRadius: 5,
+        //         offset: Offset.zero,
+        //         color: Colors.grey)
+        //   ]),
+        //   width: MediaQuery.of(context).size.width,
+        //   height: 60,
+        //   child: Row(
+        //     children: <Widget>[Icon(Icons.add), Text('Agregar Producto')],
+        //     crossAxisAlignment: CrossAxisAlignment.center,
+        //     mainAxisAlignment: MainAxisAlignment.center,
+        //   ),
+        //   alignment: Alignment.center,
+        // ),
+        // ButtonTheme(
+        //   height: 60,
+        //   minWidth: MediaQuery.of(context).size.width,
+        //   child: RaisedButton(
+        //     color: Colors.white,
+        //     onPressed: () {},
+        //     elevation: 7,
+        //     child: Row(
+        //       mainAxisAlignment: MainAxisAlignment.center,
+        //       children: <Widget>[
+        //         Icon(Icons.add),
+        //         Text('Agregar Producto'),
+        //       ],
+        //     ),
+        //   ),
+        // ),
+        RawMaterialButton(
+            constraints: BoxConstraints.tight(
+              Size(MediaQuery.of(context).size.width, 60),
+            ),
+            onPressed: () {
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => AddProductScreen()));
+            },
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Icon(Icons.add),
+                Text('AGREGAR PRODUCTO',
+                    style: TextStyle(fontWeight: FontWeight.w800))
+              ],
+            ),
+            elevation: 8,
+            fillColor: Colors.white),
+        RawMaterialButton(
+          fillColor: Colors.green,
+          constraints: BoxConstraints.tight(
+            Size(MediaQuery.of(context).size.width, 60),
+          ),
+          onPressed: () {},
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Icon(
+                Icons.check,
+                color: Colors.white,
+              ),
+              Text('VALIDAR',
+                  style: TextStyle(
+                      fontWeight: FontWeight.w800, color: Colors.white))
+            ],
+          ),
+          // shape: new CircleBorder(),
+          elevation: 5,
         ),
       ],
     ));
