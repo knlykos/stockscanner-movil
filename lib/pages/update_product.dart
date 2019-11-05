@@ -53,7 +53,7 @@ class _UpdateProductState extends State<UpdateProduct> {
     if (auth.isSuccess) {
       // print(auth.getUser());
       final domain = [
-        ['display_name', 'ilike', pattern]
+        ['default_code', 'ilike', pattern]
       ];
       // print(domain);
       final fields = null;
@@ -62,6 +62,30 @@ class _UpdateProductState extends State<UpdateProduct> {
         domain,
         fields,
       );
+
+      final domainName = [
+        ['name', 'ilike', pattern]
+      ];
+      // print(domain);
+      final fieldsName = null;
+      final resName = await client.searchRead(
+        "product.product",
+        domainName,
+        fieldsName,
+      );
+
+      final domainBarcode = [
+        ['barcode', 'ilike', pattern]
+      ];
+      // print(domain);
+      final fieldsBarcode = null;
+      final resBarcode = await client.searchRead(
+        "product.product",
+        domainBarcode,
+        fieldsBarcode,
+      );
+      res.getResult()['records'].addAll(resName.getResult()['records']);
+      res.getResult()['records'].addAll(resBarcode.getResult()['records']);
       if (!res.hasError()) {
         String data;
 
@@ -102,7 +126,7 @@ class _UpdateProductState extends State<UpdateProduct> {
                       return ListTile(
                         leading: Icon(Icons.shopping_cart),
                         title: Text(product['display_name']),
-                        // subtitle: Text('\$${product['lst_price']}'),
+                        subtitle: Text('\$${product['lst_price']}'),
                       );
                     },
                     onSuggestionSelected: (product) {
