@@ -35,11 +35,15 @@ class _UpdateProductState extends State<UpdateProduct> {
   ServerProvider serverProvider;
   OdooClient client;
   TextEditingController productTextController;
+  TextEditingController teoricalTextController;
+  TextEditingController realTextController;
 
   Future<OdooResponse> productList;
   @override
   void initState() {
     productTextController = new TextEditingController(text: '');
+    teoricalTextController = new TextEditingController(text: '');
+    realTextController = new TextEditingController(text: '');
     super.initState();
   }
 
@@ -96,6 +100,34 @@ class _UpdateProductState extends State<UpdateProduct> {
     }
   }
 
+  Future<OdooResponse> getStockInventoryLine(pattern) async {
+    OdooResponse response;
+    client = new OdooClient('https://odoo.nkodexsoft.com');
+
+    final auth = await client.authenticate(serverProvider.userDB,
+        serverProvider.passwordDB, serverProvider.selectedDB);
+    print(auth.isSuccess);
+    if (auth.isSuccess) {
+      // print(auth.getUser());
+      final domain = [
+        ['product_id', '=', pattern]
+      ];
+      // print(domain);
+      final fields = null;
+      final res = await client.searchRead(
+        "stock.inventory.line",
+        domain,
+        fields,
+      );
+
+      if (!res.hasError()) {
+        return res;
+      } else {
+        return res;
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     serverProvider = Provider.of<ServerProvider>(context);
@@ -129,8 +161,15 @@ class _UpdateProductState extends State<UpdateProduct> {
                         subtitle: Text('\$${product['lst_price']}'),
                       );
                     },
-                    onSuggestionSelected: (product) {
-                      productTextController.text = product['display_name'];
+                    onSuggestionSelected: (product) async {
+                      final data = await getStockInventoryLine(product['id']);
+                      // print({'getStockInventoryLine',data.getResult()['records']});
+                      productTextController.text = data.getResult()['records']['display_name'];
+                      realTextController =
+                          data.getResult()['records']['theoretical_qty'];
+                      teoricalTextController.text = data.getResult()['records']['product_qty'];
+
+                      // productTextController.text[]
                     },
                   ),
                   // TextField(
