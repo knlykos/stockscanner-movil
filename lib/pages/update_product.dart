@@ -88,10 +88,10 @@ class _UpdateProductState extends State<UpdateProduct> {
         domainBarcode,
         fieldsBarcode,
       );
-      res.getResult()['records'].addAll(resName.getResult()['records']);
-      res.getResult()['records'].addAll(resBarcode.getResult()['records']);
+
       if (!res.hasError()) {
-        String data;
+        res.getResult()['records'].addAll(resName.getResult()['records']);
+        res.getResult()['records'].addAll(resBarcode.getResult()['records']);
 
         return res;
       } else {
@@ -164,10 +164,17 @@ class _UpdateProductState extends State<UpdateProduct> {
                     onSuggestionSelected: (product) async {
                       final data = await getStockInventoryLine(product['id']);
                       // print({'getStockInventoryLine',data.getResult()['records']});
-                      productTextController.text = data.getResult()['records']['display_name'];
-                      realTextController =
-                          data.getResult()['records']['theoretical_qty'];
-                      teoricalTextController.text = data.getResult()['records']['product_qty'];
+                      // TODO: Si es vacio debe de generar un dialogo mostrando el error, "Ha sucedido un error, vuelve a intentarlo"
+
+                      print(product['display_name']);
+                      // productTextController.text =
+                      //     product['records']['display_name'];
+                      realTextController.text = data
+                          .getResult()['records'][0]['theoretical_qty']
+                          .toString();
+                      teoricalTextController.text = data
+                          .getResult()['records'][0]['product_qty']
+                          .toString();
 
                       // productTextController.text[]
                     },
@@ -180,11 +187,13 @@ class _UpdateProductState extends State<UpdateProduct> {
                     decoration: InputDecoration(
                         hasFloatingPlaceholder: true,
                         labelText: 'Cantidad Teorica'),
+                    controller: teoricalTextController,
                   ),
                   TextField(
                     decoration: InputDecoration(
                         hasFloatingPlaceholder: true,
                         labelText: 'Cantidad Real'),
+                    controller: realTextController,
                   ),
                 ],
               ),
