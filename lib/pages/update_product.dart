@@ -174,19 +174,16 @@ class _UpdateProductState extends State<UpdateProduct> {
                       );
                     },
                     onSuggestionSelected: (product) async {
-                      final data = await getStockInventoryLine(product['id']);
+                      // final data = await getStockInventoryLine(product['id']);
                       // print({'getStockInventoryLine',data.getResult()['records']});
                       // TODO: Si es vacio debe de generar un dialogo mostrando el error, "Ha sucedido un error, vuelve a intentarlo"
 
                       print(product['display_name']);
                       // productTextController.text =
                       //     product['records']['display_name'];
-                      realTextController.text = data
-                          .getResult()['records'][0]['theoretical_qty']
-                          .toString();
-                      teoricalTextController.text = data
-                          .getResult()['records'][0]['product_qty']
-                          .toString();
+                      
+                      realTextController.text = product['qty_available'].toString();
+                      teoricalTextController.text = product['virtual_available'].toString();
 
                       // productTextController.text[]
                     },
