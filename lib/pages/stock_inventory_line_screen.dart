@@ -12,9 +12,10 @@ import 'package:stockscanner/pages/update_product.dart';
 import 'package:stockscanner/provider/server_provider.dart';
 
 class StockInventoryLineScreen extends StatelessWidget {
+  int stockInventoryId;
   int inventoryId;
 
-  StockInventoryLineScreen({this.inventoryId});
+  StockInventoryLineScreen({this.stockInventoryId, this.inventoryId});
 
   @override
   Widget build(BuildContext context) {
@@ -30,9 +31,11 @@ class StockInventoryLineScreen extends StatelessWidget {
 }
 
 class StockInventoryLineListView extends StatefulWidget {
+  final int stockInventoryId;
   final int inventoryId;
 
-  StockInventoryLineListView({Key key, this.inventoryId}) : super(key: key);
+  StockInventoryLineListView({Key key, this.stockInventoryId, this.inventoryId})
+      : super(key: key);
   @override
   _StockInventoryLineListViewState createState() =>
       _StockInventoryLineListViewState();
@@ -137,6 +140,8 @@ class _StockInventoryLineListViewState
                         context,
                         MaterialPageRoute(
                             builder: (context) => UpdateProductScreen(
+                                  stockInventoryId: widget.stockInventoryId,
+                                  stockInventoryLineId: widget.inventoryId,
                                   productId: records[index]['product'][0]['id'],
                                   title: records[index]['product'][0]
                                       ['display_name'],

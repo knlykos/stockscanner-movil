@@ -30,8 +30,15 @@ class UpdateProductScreen extends StatelessWidget {
 
 class UpdateProduct extends StatefulWidget {
   int productId;
+  int stockInventoryId;
+  int stockInventoryLineId;
+  String title = '';
 
-  UpdateProduct({this.productId});
+  UpdateProduct(
+      {this.stockInventoryId,
+      this.stockInventoryLineId,
+      this.productId,
+      this.title});
 
   @override
   _UpdateProductState createState() => _UpdateProductState();
@@ -181,9 +188,11 @@ class _UpdateProductState extends State<UpdateProduct> {
                       print(product['display_name']);
                       // productTextController.text =
                       //     product['records']['display_name'];
-                      
-                      realTextController.text = product['qty_available'].toString();
-                      teoricalTextController.text = product['virtual_available'].toString();
+
+                      realTextController.text =
+                          product['qty_available'].toString();
+                      teoricalTextController.text =
+                          product['virtual_available'].toString();
 
                       // productTextController.text[]
                     },
