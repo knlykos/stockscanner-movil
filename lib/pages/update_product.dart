@@ -6,10 +6,16 @@ import 'package:provider/provider.dart';
 import 'package:stockscanner/provider/server_provider.dart';
 
 class UpdateProductScreen extends StatelessWidget {
-  String title = '';
+  int stockInventoryId;
+  int stockInventoryLineId;
   int productId;
+  String title = '';
 
-  UpdateProductScreen({this.productId, this.title});
+  UpdateProductScreen(
+      {this.stockInventoryId,
+      this.stockInventoryLineId,
+      this.productId,
+      this.title});
 
   @override
   Widget build(BuildContext context) {
@@ -57,7 +63,9 @@ class _UpdateProductState extends State<UpdateProduct> {
     if (auth.isSuccess) {
       // print(auth.getUser());
       final domain = [
-        ['default_code', 'ilike', pattern]
+        ['default_code', 'ilike', pattern],
+        ["active", "=", true],
+        ["type", "=", "product"]
       ];
       // print(domain);
       final fields = null;
@@ -68,7 +76,9 @@ class _UpdateProductState extends State<UpdateProduct> {
       );
 
       final domainName = [
-        ['name', 'ilike', pattern]
+        ['name', 'ilike', pattern],
+        ["active", "=", true],
+        ["type", "=", "product"]
       ];
       // print(domain);
       final fieldsName = null;
@@ -79,7 +89,9 @@ class _UpdateProductState extends State<UpdateProduct> {
       );
 
       final domainBarcode = [
-        ['barcode', 'ilike', pattern]
+        ['barcode', 'ilike', pattern],
+        ["active", "=", true],
+        ["type", "=", "product"]
       ];
       // print(domain);
       final fieldsBarcode = null;

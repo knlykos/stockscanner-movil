@@ -138,7 +138,8 @@ class _StockInventoryLineListViewState
                         MaterialPageRoute(
                             builder: (context) => UpdateProductScreen(
                                   productId: records[index]['product'][0]['id'],
-                                  title: records[index]['product'][0]['display_name'],
+                                  title: records[index]['product'][0]
+                                      ['display_name'],
                                 )));
                   },
                 );
