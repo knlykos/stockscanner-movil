@@ -1,8 +1,4 @@
 import 'package:flutter/foundation.dart';
-import 'package:odoo_api/odoo_api.dart';
-import 'package:odoo_api/odoo_api_connector.dart';
-import 'package:odoo_api/odoo_user_response.dart';
-import 'package:stockscanner/api/server_api.dart';
 
 class ServerProvider with ChangeNotifier {
   String _serverUrl;
@@ -44,9 +40,35 @@ class ServerProvider with ChangeNotifier {
   bool _isAuth;
 
   bool get isAuth => _isAuth;
-
   set isAuth(bool isAuth) {
     _isAuth = isAuth;
+    notifyListeners();
+  }
+
+  dynamic _stockInventory;
+
+  dynamic get stockInventory => _stockInventory;
+
+  set stockInventory(dynamic stockInventory) {
+    _stockInventory = stockInventory;
+    notifyListeners();
+  }
+
+  dynamic _stockInventoryLine;
+
+  dynamic get stockInventoryLine => _stockInventoryLine;
+
+  set stockInventoryLine(dynamic stockInventoryLine) {
+    _stockInventoryLine = stockInventoryLine;
+    // notifyListeners();
+  }
+
+  dynamic _productProduct;
+
+  dynamic get productProduct => _productProduct;
+
+  set productProduct(dynamic productProduct) {
+    _productProduct = productProduct;
     notifyListeners();
   }
 

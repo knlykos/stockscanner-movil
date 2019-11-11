@@ -136,15 +136,15 @@ class _StockInventoryLineListViewState
                   subtitle: Text(records[index]['product'][0]['create_date']),
                   trailing: Icon(Icons.edit),
                   onTap: () {
+                    print({'records[index]', records[index]});
                     Navigator.push(
                         context,
                         MaterialPageRoute(
                             builder: (context) => UpdateProductScreen(
                                   stockInventoryId: widget.stockInventoryId,
-                                  stockInventoryLineId: widget.inventoryId,
-                                  productId: records[index]['product'][0]['id'],
-                                  title: records[index]['product'][0]
-                                      ['display_name'],
+                                  stockInventoryLine: records[index],
+                                  // title: records[index]['product'][0]
+                                  //     ['display_name'],
                                 )));
                   },
                 );

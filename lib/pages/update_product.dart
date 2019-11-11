@@ -7,56 +7,60 @@ import 'package:stockscanner/provider/server_provider.dart';
 
 class UpdateProductScreen extends StatelessWidget {
   int stockInventoryId;
-  int stockInventoryLineId;
-  int productId;
-  String title = '';
+  dynamic stockInventoryLine;
 
-  UpdateProductScreen(
-      {this.stockInventoryId,
-      this.stockInventoryLineId,
-      this.productId,
-      this.title});
+  UpdateProductScreen({
+    this.stockInventoryId,
+    this.stockInventoryLine,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final serverProvider = Provider.of<ServerProvider>(context);
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(this.title),
+        title: Text((serverProvider.stockInventoryLine == null
+            ? ''
+            : serverProvider.stockInventoryLine[0]['product_id'][1])),
       ),
-      body: UpdateProduct(),
+      body: UpdateProduct(
+          stockInventoryId: this.stockInventoryId,
+          stockInventoryLine: this.stockInventoryLine),
     );
   }
 }
 
 class UpdateProduct extends StatefulWidget {
-  int productId;
   int stockInventoryId;
-  int stockInventoryLineId;
-  String title = '';
+  dynamic stockInventoryLine;
 
-  UpdateProduct(
-      {this.stockInventoryId,
-      this.stockInventoryLineId,
-      this.productId,
-      this.title});
+  UpdateProduct({
+    this.stockInventoryId,
+    this.stockInventoryLine,
+  });
 
   @override
   _UpdateProductState createState() => _UpdateProductState();
 }
 
 class _UpdateProductState extends State<UpdateProduct> {
+  bool productEnable;
   ServerProvider serverProvider;
   OdooClient client;
   TextEditingController productTextController;
   TextEditingController teoricalTextController;
   TextEditingController realTextController;
+  dynamic product;
 
-  Future<OdooResponse> productList;
+  Future<OdooResponse> stockInventoryLineRes;
   @override
   void initState() {
+    print({'stockInventoryLine', widget});
     productTextController = new TextEditingController(text: '');
     teoricalTextController = new TextEditingController(text: '');
     realTextController = new TextEditingController(text: '');
+    productEnable = false;
     super.initState();
   }
 
@@ -119,6 +123,34 @@ class _UpdateProductState extends State<UpdateProduct> {
     }
   }
 
+  Future<OdooResponse> getStockInventoryLineById(int id) async {
+    OdooResponse response;
+    client = new OdooClient('https://odoo.nkodexsoft.com');
+
+    final auth = await client.authenticate(serverProvider.userDB,
+        serverProvider.passwordDB, serverProvider.selectedDB);
+    print(auth.isSuccess);
+    if (auth.isSuccess) {
+      // print(auth.getUser());
+      final domain = [
+        ['id', '=', id]
+      ];
+      // print(domain);
+      final fields = null;
+      final res = await client.searchRead(
+        "stock.inventory.line",
+        domain,
+        fields,
+      );
+
+      if (!res.hasError()) {
+        return res;
+      } else {
+        return res;
+      }
+    }
+  }
+
   Future<OdooResponse> getStockInventoryLine(pattern) async {
     OdooResponse response;
     client = new OdooClient('https://odoo.nkodexsoft.com');
@@ -150,8 +182,9 @@ class _UpdateProductState extends State<UpdateProduct> {
   @override
   Widget build(BuildContext context) {
     serverProvider = Provider.of<ServerProvider>(context);
-    // productList ??= getOdooProductsProducts(pattern);
-    return Container(
+    stockInventoryLineRes ??=
+        getStockInventoryLineById(widget.stockInventoryLine["id"]);
+    var container = Container(
       child: Column(
         children: <Widget>[
           Expanded(
@@ -161,19 +194,27 @@ class _UpdateProductState extends State<UpdateProduct> {
               child: Column(
                 children: <Widget>[
                   TypeAheadField(
+                    debounceDuration: Duration(milliseconds: 50),
                     textFieldConfiguration: TextFieldConfiguration(
-                        autofocus: true,
-                        controller: productTextController,
-                        decoration: InputDecoration(
-                            hasFloatingPlaceholder: true,
-                            labelText: 'Producto')),
+                      enabled: this.productEnable,
+                      autofocus: true,
+                      controller: productTextController,
+                      decoration: InputDecoration(
+                          // suffix: IconButton(
+                          //   icon: Icon(Icons.clear),
+                          //   onPressed: () {
+                          //     productTextController.clear();
+                          //   },
+                          // ),
+                          hasFloatingPlaceholder: true,
+                          labelText: 'Producto'),
+                    ),
                     suggestionsCallback: (pattern) async {
                       final data = await getOdooProductsProducts(pattern);
-
                       return data.getResult()['records'];
                     },
                     itemBuilder: (context, product) {
-                      print(product);
+                      this.product = product;
                       return ListTile(
                         leading: Icon(Icons.shopping_cart),
                         title: Text(product['display_name']),
@@ -181,27 +222,27 @@ class _UpdateProductState extends State<UpdateProduct> {
                       );
                     },
                     onSuggestionSelected: (product) async {
-                      // final data = await getStockInventoryLine(product['id']);
+                      this.serverProvider.productProduct = product;
+                      final data = await getStockInventoryLine(product['id']);
                       // print({'getStockInventoryLine',data.getResult()['records']});
                       // TODO: Si es vacio debe de generar un dialogo mostrando el error, "Ha sucedido un error, vuelve a intentarlo"
+                      // this.serverProvider.stockInventoryLine =
+                      //     data.getResult()['records'];
 
-                      print(product['display_name']);
-                      // productTextController.text =
-                      //     product['records']['display_name'];
+                      // print(product['display_name']);
+                      productTextController.text = product['name'];
 
+                      teoricalTextController.text = widget
+                          .stockInventoryLine['theoretical_qty']
+                          .toString();
                       realTextController.text =
-                          product['qty_available'].toString();
-                      teoricalTextController.text =
-                          product['virtual_available'].toString();
+                          widget.stockInventoryLine['product_qty'].toString();
 
                       // productTextController.text[]
                     },
                   ),
-                  // TextField(
-                  //   decoration: InputDecoration(
-                  //       hasFloatingPlaceholder: true, labelText: 'Producto'),
-                  // ),
                   TextField(
+                    enabled: false,
                     decoration: InputDecoration(
                         hasFloatingPlaceholder: true,
                         labelText: 'Cantidad Teorica'),
@@ -213,6 +254,31 @@ class _UpdateProductState extends State<UpdateProduct> {
                         labelText: 'Cantidad Real'),
                     controller: realTextController,
                   ),
+                  RaisedButton(
+                    color: Colors.red,
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        Icon(
+                          Icons.delete,
+                          color: Colors.white,
+                        ),
+                        Text(
+                          'Borrar',
+                          style: TextStyle(color: Colors.white),
+                        )
+                      ],
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        this.productEnable = true;
+                        this.productTextController.clear();
+                        this.teoricalTextController.clear();
+                        this.realTextController.clear();
+                      });
+                    },
+                  )
                 ],
               ),
             ),
@@ -240,7 +306,32 @@ class _UpdateProductState extends State<UpdateProduct> {
                 constraints: BoxConstraints.tight(
                   Size(MediaQuery.of(context).size.width / 2, 60),
                 ),
-                onPressed: () {},
+                onPressed: () async {
+                  OdooResponse response;
+                  client = new OdooClient('https://odoo.nkodexsoft.com');
+
+                  final auth = await client.authenticate(serverProvider.userDB,
+                      serverProvider.passwordDB, serverProvider.selectedDB);
+                  print(auth.isSuccess);
+                  if (auth.isSuccess) {
+                    // print(auth.getUser());
+                    final res = await client.write("stock.inventory.line", [
+                      this.serverProvider.stockInventoryLine[0]['id']
+                    ], {
+                      "product_id": this.serverProvider.productProduct["id"],
+                      "location_id": 15,
+                      "product_uom_id": this.product["uom_id"][0]
+                    });
+                    print({'hasError', res.getError()});
+                    print({'getResult', res.getResult()});
+                    if (!res.hasError()) {
+                      print(res.getResult());
+                      return res;
+                    } else {
+                      return res;
+                    }
+                  }
+                },
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
@@ -257,5 +348,34 @@ class _UpdateProductState extends State<UpdateProduct> {
         ],
       ),
     );
+    return FutureBuilder(
+        future: stockInventoryLineRes,
+        builder: (context, AsyncSnapshot<OdooResponse> snapshot) {
+          if (snapshot.connectionState == ConnectionState.done) {
+            this.serverProvider.stockInventoryLine =
+                snapshot.data.getResult()['records'];
+            this.serverProvider.stockInventoryLine;
+
+            // print(product['display_name']);
+            productTextController.text =
+                this.serverProvider.stockInventoryLine[0]['product_id'][1];
+
+            teoricalTextController.text = this
+                .serverProvider
+                .stockInventoryLine[0]['theoretical_qty']
+                .toString();
+            realTextController.text = this
+                .serverProvider
+                .stockInventoryLine[0]['product_qty']
+                .toString();
+            final records = snapshot.data.getResult()['records'];
+            final length = snapshot.data.getResult()['length'];
+            return container;
+          } else {
+            return Container(
+              child: Text('Cargando...'),
+            );
+          }
+        });
   }
 }
