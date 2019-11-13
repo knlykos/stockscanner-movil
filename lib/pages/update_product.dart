@@ -45,23 +45,32 @@ class UpdateProduct extends StatefulWidget {
 }
 
 class _UpdateProductState extends State<UpdateProduct> {
-  bool productEnable;
+  bool productEnable = false;
   ServerProvider serverProvider;
   OdooClient client;
-  TextEditingController productTextController;
-  TextEditingController teoricalTextController;
-  TextEditingController realTextController;
+  TextEditingController productTextController = new TextEditingController();
+  TextEditingController teoricalTextController = new TextEditingController();
+  TextEditingController realTextController = new TextEditingController();
+
   dynamic product;
 
   Future<OdooResponse> stockInventoryLineRes;
   @override
   void initState() {
-    print({'stockInventoryLine', widget});
-    productTextController = new TextEditingController(text: '');
-    teoricalTextController = new TextEditingController(text: '');
-    realTextController = new TextEditingController(text: '');
-    productEnable = false;
+    this.stockInventoryLineRes ??=
+        getStockInventoryLineById(widget.stockInventoryLine["id"]);
+
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    // Clean up the controller when the widget is removed from the
+    // widget tree.
+    productTextController.dispose();
+    teoricalTextController.dispose();
+    realTextController.dispose();
+    super.dispose();
   }
 
   Future<OdooResponse> getOdooProductsProducts(pattern) async {
@@ -70,15 +79,14 @@ class _UpdateProductState extends State<UpdateProduct> {
 
     final auth = await client.authenticate(serverProvider.userDB,
         serverProvider.passwordDB, serverProvider.selectedDB);
-    print(auth.isSuccess);
+
     if (auth.isSuccess) {
-      // print(auth.getUser());
       final domain = [
         ['default_code', 'ilike', pattern],
         ["active", "=", true],
         ["type", "=", "product"]
       ];
-      // print(domain);
+
       final fields = null;
       final res = await client.searchRead(
         "product.product",
@@ -91,7 +99,7 @@ class _UpdateProductState extends State<UpdateProduct> {
         ["active", "=", true],
         ["type", "=", "product"]
       ];
-      // print(domain);
+
       final fieldsName = null;
       final resName = await client.searchRead(
         "product.product",
@@ -104,7 +112,7 @@ class _UpdateProductState extends State<UpdateProduct> {
         ["active", "=", true],
         ["type", "=", "product"]
       ];
-      // print(domain);
+
       final fieldsBarcode = null;
       final resBarcode = await client.searchRead(
         "product.product",
@@ -129,13 +137,12 @@ class _UpdateProductState extends State<UpdateProduct> {
 
     final auth = await client.authenticate(serverProvider.userDB,
         serverProvider.passwordDB, serverProvider.selectedDB);
-    print(auth.isSuccess);
+
     if (auth.isSuccess) {
-      // print(auth.getUser());
       final domain = [
         ['id', '=', id]
       ];
-      // print(domain);
+
       final fields = null;
       final res = await client.searchRead(
         "stock.inventory.line",
@@ -157,13 +164,12 @@ class _UpdateProductState extends State<UpdateProduct> {
 
     final auth = await client.authenticate(serverProvider.userDB,
         serverProvider.passwordDB, serverProvider.selectedDB);
-    print(auth.isSuccess);
+
     if (auth.isSuccess) {
-      // print(auth.getUser());
       final domain = [
         ['product_id', '=', pattern]
       ];
-      // print(domain);
+
       final fields = null;
       final res = await client.searchRead(
         "stock.inventory.line",
@@ -179,11 +185,18 @@ class _UpdateProductState extends State<UpdateProduct> {
     }
   }
 
+  void setTextFieldValues(stockInventoryLine) {
+    productTextController.text = stockInventoryLine[0]['product_id'][1];
+
+    teoricalTextController.text =
+        stockInventoryLine[0]['theoretical_qty'].toString();
+    realTextController.text = stockInventoryLine[0]['product_qty'].toString();
+  }
+
   @override
   Widget build(BuildContext context) {
     serverProvider = Provider.of<ServerProvider>(context);
-    stockInventoryLineRes ??=
-        getStockInventoryLineById(widget.stockInventoryLine["id"]);
+
     var container = Container(
       child: Column(
         children: <Widget>[
@@ -224,12 +237,11 @@ class _UpdateProductState extends State<UpdateProduct> {
                     onSuggestionSelected: (product) async {
                       this.serverProvider.productProduct = product;
                       final data = await getStockInventoryLine(product['id']);
-                      // print({'getStockInventoryLine',data.getResult()['records']});
+
                       // TODO: Si es vacio debe de generar un dialogo mostrando el error, "Ha sucedido un error, vuelve a intentarlo"
                       // this.serverProvider.stockInventoryLine =
                       //     data.getResult()['records'];
 
-                      // print(product['display_name']);
                       productTextController.text = product['name'];
 
                       teoricalTextController.text = widget
@@ -271,12 +283,10 @@ class _UpdateProductState extends State<UpdateProduct> {
                       ],
                     ),
                     onPressed: () {
-                      setState(() {
-                        this.productEnable = true;
-                        this.productTextController.clear();
-                        this.teoricalTextController.clear();
-                        this.realTextController.clear();
-                      });
+                      this.productEnable = true;
+                      this.productTextController.clear();
+                      this.teoricalTextController.clear();
+                      this.realTextController.clear();
                     },
                   )
                 ],
@@ -312,9 +322,8 @@ class _UpdateProductState extends State<UpdateProduct> {
 
                   final auth = await client.authenticate(serverProvider.userDB,
                       serverProvider.passwordDB, serverProvider.selectedDB);
-                  print(auth.isSuccess);
+
                   if (auth.isSuccess) {
-                    // print(auth.getUser());
                     final res = await client.write("stock.inventory.line", [
                       this.serverProvider.stockInventoryLine[0]['id']
                     ], {
@@ -322,10 +331,8 @@ class _UpdateProductState extends State<UpdateProduct> {
                       "location_id": 15,
                       "product_uom_id": this.product["uom_id"][0]
                     });
-                    print({'hasError', res.getError()});
-                    print({'getResult', res.getResult()});
+
                     if (!res.hasError()) {
-                      print(res.getResult());
                       return res;
                     } else {
                       return res;
@@ -352,24 +359,11 @@ class _UpdateProductState extends State<UpdateProduct> {
         future: stockInventoryLineRes,
         builder: (context, AsyncSnapshot<OdooResponse> snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
-            this.serverProvider.stockInventoryLine =
-                snapshot.data.getResult()['records'];
-            this.serverProvider.stockInventoryLine;
-
-            // print(product['display_name']);
-            productTextController.text =
-                this.serverProvider.stockInventoryLine[0]['product_id'][1];
-
-            teoricalTextController.text = this
-                .serverProvider
-                .stockInventoryLine[0]['theoretical_qty']
-                .toString();
-            realTextController.text = this
-                .serverProvider
-                .stockInventoryLine[0]['product_qty']
-                .toString();
-            final records = snapshot.data.getResult()['records'];
-            final length = snapshot.data.getResult()['length'];
+            // this.serverProvider.stockInventoryLine =
+            //     snapshot.data.getResult()['records'];
+            // this.serverProvider.stockInventoryLine;
+            print({'snapshot', snapshot.data});
+            // this.setTextFieldValues(snapshot.data.getResult()['records']);
             return container;
           } else {
             return Container(
