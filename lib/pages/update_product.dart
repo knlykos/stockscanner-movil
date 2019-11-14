@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
+import 'package:localstorage/localstorage.dart';
 import 'package:odoo_api/odoo_api.dart';
 import 'package:odoo_api/odoo_api_connector.dart';
 import 'package:provider/provider.dart';
@@ -19,11 +20,7 @@ class UpdateProductScreen extends StatelessWidget {
     final serverProvider = Provider.of<ServerProvider>(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text((serverProvider.stockInventoryLine == null
-            ? ''
-            : serverProvider.stockInventoryLine[0]['product_id'][1])),
-      ),
+      appBar: AppBar(title: Text('UpdateProduct')),
       body: UpdateProduct(
           stockInventoryId: this.stockInventoryId,
           stockInventoryLine: this.stockInventoryLine),
@@ -51,22 +48,28 @@ class _UpdateProductState extends State<UpdateProduct> {
   TextEditingController productTextController = new TextEditingController();
   TextEditingController teoricalTextController = new TextEditingController();
   TextEditingController realTextController = new TextEditingController();
+  Future<OdooResponse> stockInventoryLineRes;
+  LocalStorage storage;
+  String user;
+  String password;
+  String db;
 
   dynamic product;
 
-  Future<OdooResponse> stockInventoryLineRes;
   @override
   void initState() {
-    this.stockInventoryLineRes ??=
-        getStockInventoryLineById(widget.stockInventoryLine["id"]);
-
     super.initState();
+
+    storage = new LocalStorage('auth');
+    user = storage.getItem('user');
+    password = storage.getItem('password');
+    db = storage.getItem('db');
+    stockInventoryLineRes =
+        getStockInventoryLineById(widget.stockInventoryLine["id"]);
   }
 
   @override
   void dispose() {
-    // Clean up the controller when the widget is removed from the
-    // widget tree.
     productTextController.dispose();
     teoricalTextController.dispose();
     realTextController.dispose();
@@ -77,8 +80,7 @@ class _UpdateProductState extends State<UpdateProduct> {
     OdooResponse response;
     client = new OdooClient('https://odoo.nkodexsoft.com');
 
-    final auth = await client.authenticate(serverProvider.userDB,
-        serverProvider.passwordDB, serverProvider.selectedDB);
+    final auth = await client.authenticate(user, password, db);
 
     if (auth.isSuccess) {
       final domain = [
@@ -132,12 +134,10 @@ class _UpdateProductState extends State<UpdateProduct> {
   }
 
   Future<OdooResponse> getStockInventoryLineById(int id) async {
-    OdooResponse response;
     client = new OdooClient('https://odoo.nkodexsoft.com');
 
-    final auth = await client.authenticate(serverProvider.userDB,
-        serverProvider.passwordDB, serverProvider.selectedDB);
-
+    final auth = await client.authenticate(user, password, db);
+    print(auth.isSuccess);
     if (auth.isSuccess) {
       final domain = [
         ['id', '=', id]
@@ -149,7 +149,7 @@ class _UpdateProductState extends State<UpdateProduct> {
         domain,
         fields,
       );
-
+      print(res);
       if (!res.hasError()) {
         return res;
       } else {
@@ -162,8 +162,7 @@ class _UpdateProductState extends State<UpdateProduct> {
     OdooResponse response;
     client = new OdooClient('https://odoo.nkodexsoft.com');
 
-    final auth = await client.authenticate(serverProvider.userDB,
-        serverProvider.passwordDB, serverProvider.selectedDB);
+    final auth = await client.authenticate(user, password, db);
 
     if (auth.isSuccess) {
       final domain = [
@@ -195,8 +194,6 @@ class _UpdateProductState extends State<UpdateProduct> {
 
   @override
   Widget build(BuildContext context) {
-    serverProvider = Provider.of<ServerProvider>(context);
-
     var container = Container(
       child: Column(
         children: <Widget>[
@@ -355,14 +352,16 @@ class _UpdateProductState extends State<UpdateProduct> {
         ],
       ),
     );
+    // TODO: Cambio en FutureBuilder el texto necesita ser asignado en otro momento o lograr que no recargue cada vez que aparece el teclado
+    // HAY QUE MOVER TODO A OTRO LADO;
     return FutureBuilder(
-        future: stockInventoryLineRes,
+        future: this.stockInventoryLineRes,
         builder: (context, AsyncSnapshot<OdooResponse> snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
             // this.serverProvider.stockInventoryLine =
             //     snapshot.data.getResult()['records'];
             // this.serverProvider.stockInventoryLine;
-            print({'snapshot', snapshot.data});
+            print({'snapshot', snapshot.data.getResult()['records']});
             // this.setTextFieldValues(snapshot.data.getResult()['records']);
             return container;
           } else {

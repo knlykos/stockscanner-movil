@@ -24,10 +24,9 @@ class _LoginScreenState extends State<LoginScreen> {
   List odooDBList;
   @override
   void initState() {
+    super.initState();
     this.dbSelected = null;
     this.odooDBList = [''];
-
-    super.initState();
   }
 
   @override
@@ -63,6 +62,10 @@ class _LoginScreenState extends State<LoginScreen> {
           await server.auth(odooUser.text, odooPassword.text, dbSelected);
       serverProvider.setAuthParams(
           odooUser.text, odooPassword.text, dbSelected);
+      final LocalStorage storage = new LocalStorage('auth');
+      storage.setItem('user', odooUser.text);
+      storage.setItem('password', odooPassword.text);
+      storage.setItem('db', dbSelected);
       serverProvider.serverUrl = odooUrl.text;
       print({'isSuccess', authCallback.isSuccess});
       serverProvider.isAuth = authCallback.isSuccess;
