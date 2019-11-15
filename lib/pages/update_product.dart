@@ -53,7 +53,7 @@ class _UpdateProductState extends State<UpdateProduct> {
   String user;
   String password;
   String db;
-
+  bool loading = false;
   dynamic product;
 
   @override
@@ -66,6 +66,24 @@ class _UpdateProductState extends State<UpdateProduct> {
     db = storage.getItem('db');
     stockInventoryLineRes =
         getStockInventoryLineById(widget.stockInventoryLine["id"]);
+    stockInventoryLineRes.then((stockInventoryLine) {
+      setState(() {
+        this.loading = true;
+      });
+      this.productTextController.text =
+          stockInventoryLine.getResult()['records'][0]['product_id'][1];
+      this.teoricalTextController.text = stockInventoryLine
+          .getResult()['records'][0]['theoretical_qty']
+          .toString();
+      this.realTextController.text = stockInventoryLine
+          .getResult()['records'][0]['product_qty']
+          .toString();
+// this.teoricalTextController.text = stockInventoryLine.getResult()['records'][0]['']
+      // print(stockInventoryLine.getResult()['records'][0]['product_id'][1]);
+      // this.productTextController.text =
+      //     stockInventoryLine.getResult()['records']['product_id'][1];
+      print(stockInventoryLine.getResult());
+    });
   }
 
   @override
@@ -149,7 +167,6 @@ class _UpdateProductState extends State<UpdateProduct> {
         domain,
         fields,
       );
-      print(res);
       if (!res.hasError()) {
         return res;
       } else {
@@ -232,8 +249,12 @@ class _UpdateProductState extends State<UpdateProduct> {
                       );
                     },
                     onSuggestionSelected: (product) async {
-                      this.serverProvider.productProduct = product;
                       final data = await getStockInventoryLine(product['id']);
+                      print({'product', data.getResult()['records']});
+                      print({
+                        'getStockInventoryLine',
+                        data.getResult()['records']
+                      });
 
                       // TODO: Si es vacio debe de generar un dialogo mostrando el error, "Ha sucedido un error, vuelve a intentarlo"
                       // this.serverProvider.stockInventoryLine =
@@ -280,7 +301,9 @@ class _UpdateProductState extends State<UpdateProduct> {
                       ],
                     ),
                     onPressed: () {
-                      this.productEnable = true;
+                      setState(() {
+                        this.productEnable = true;
+                      });
                       this.productTextController.clear();
                       this.teoricalTextController.clear();
                       this.realTextController.clear();
@@ -354,21 +377,23 @@ class _UpdateProductState extends State<UpdateProduct> {
     );
     // TODO: Cambio en FutureBuilder el texto necesita ser asignado en otro momento o lograr que no recargue cada vez que aparece el teclado
     // HAY QUE MOVER TODO A OTRO LADO;
-    return FutureBuilder(
-        future: this.stockInventoryLineRes,
-        builder: (context, AsyncSnapshot<OdooResponse> snapshot) {
-          if (snapshot.connectionState == ConnectionState.done) {
-            // this.serverProvider.stockInventoryLine =
-            //     snapshot.data.getResult()['records'];
-            // this.serverProvider.stockInventoryLine;
-            print({'snapshot', snapshot.data.getResult()['records']});
-            // this.setTextFieldValues(snapshot.data.getResult()['records']);
-            return container;
-          } else {
-            return Container(
-              child: Text('Cargando...'),
-            );
-          }
-        });
+    if (this.loading) {
+      return container;
+    } else {
+      return Container(
+        child: Text('Cargando.......'),
+      );
+    }
+    // return FutureBuilder(
+    //     future: this.stockInventoryLineRes,
+    //     builder: (context, AsyncSnapshot<OdooResponse> snapshot) {
+    //       if (snapshot.connectionState == ConnectionState.done) {
+    //         return container;
+    //       } else {
+    //         return Container(
+    //           child: Text('Cargando...'),
+    //         );
+    //       }
+    //     });
   }
 }

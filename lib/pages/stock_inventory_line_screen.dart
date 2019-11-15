@@ -83,7 +83,7 @@ class _StockInventoryLineListViewState
 
     final auth = await client.authenticate(serverProvider.userDB,
         serverProvider.passwordDB, serverProvider.selectedDB);
-    print(auth.isSuccess);
+    // print(auth.isSuccess);
     if (auth.isSuccess) {
       // print(auth.getUser());
       final domain = [
@@ -97,13 +97,13 @@ class _StockInventoryLineListViewState
         fields,
       );
       if (!res.hasError()) {
-        print(res.getResult());
+        // print(res.getResult());
         for (var entry in res.getResult()['records'].asMap().entries) {
           // print({'entry', entry.value['inventory_id'][0]});
           final domain = [
             ['id', '=', entry.value['product_id'][0]]
           ];
-          print(domain);
+          // print(domain);
           const fields = null;
           OdooResponse product =
               await client.searchRead('product.product', domain, fields);
@@ -136,7 +136,7 @@ class _StockInventoryLineListViewState
                   subtitle: Text(records[index]['product'][0]['create_date']),
                   trailing: Icon(Icons.edit),
                   onTap: () {
-                    print({'records[index]', records[index]});
+                    // print({'records[index]', records[index]});
                     Navigator.push(
                         context,
                         MaterialPageRoute(
