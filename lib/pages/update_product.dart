@@ -59,9 +59,16 @@ class _UpdateProductState extends State<UpdateProduct> {
   dynamic product;
   dynamic stockInventoryLine;
 
+  // focus
+  FocusNode productFocus;
+  FocusNode realQtyFocus;
+
   @override
   void initState() {
     super.initState();
+    productFocus = new FocusNode();
+    realQtyFocus = new FocusNode();
+
     storage = new LocalStorage('auth');
     user = storage.getItem('user');
     password = storage.getItem('password');
@@ -100,6 +107,8 @@ class _UpdateProductState extends State<UpdateProduct> {
     productTextController.dispose();
     teoricalTextController.dispose();
     realTextController.dispose();
+    productFocus.dispose();
+    realQtyFocus.dispose();
     super.dispose();
   }
 
@@ -326,7 +335,6 @@ class _UpdateProductState extends State<UpdateProduct> {
       print({'res.getResult()2', res.getResult()});
     }
 
-    ;
     var container = Container(
       child: Column(
         children: <Widget>[
@@ -341,6 +349,7 @@ class _UpdateProductState extends State<UpdateProduct> {
                     hideOnEmpty: true,
                     getImmediateSuggestions: false,
                     textFieldConfiguration: TextFieldConfiguration(
+                      focusNode: productFocus,
                       enabled: this.productEnable,
                       controller: productTextController,
                       decoration: InputDecoration(
@@ -370,8 +379,7 @@ class _UpdateProductState extends State<UpdateProduct> {
                       teoricalTextController.text = widget
                           .stockInventoryLine['theoretical_qty']
                           .toString();
-                      realTextController.text =
-                          widget.stockInventoryLine['product_qty'].toString();
+                      realTextController.text = '';
                     },
                   ),
                   TextField(
@@ -382,6 +390,7 @@ class _UpdateProductState extends State<UpdateProduct> {
                     controller: teoricalTextController,
                   ),
                   TextField(
+                    focusNode: realQtyFocus,
                     autofocus: true,
                     keyboardType: TextInputType.number,
                     decoration: InputDecoration(
@@ -417,6 +426,7 @@ class _UpdateProductState extends State<UpdateProduct> {
                       this.theresChange = true;
                       setState(() {
                         this.productEnable = true;
+                        FocusScope.of(context).requestFocus(productFocus);
                       });
                       this.productTextController.clear();
                       this.teoricalTextController.clear();
