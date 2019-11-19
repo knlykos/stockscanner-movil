@@ -42,7 +42,9 @@ class UpdateProduct extends StatefulWidget {
 }
 
 class _UpdateProductState extends State<UpdateProduct> {
+  double initRealQty;
   bool productEnable = false;
+  bool theresChange = false;
   ServerProvider serverProvider;
   OdooClient client;
   TextEditingController productTextController = new TextEditingController();
@@ -55,34 +57,41 @@ class _UpdateProductState extends State<UpdateProduct> {
   String db;
   bool loading = false;
   dynamic product;
+  dynamic stockInventoryLine;
 
   @override
   void initState() {
     super.initState();
-
     storage = new LocalStorage('auth');
     user = storage.getItem('user');
     password = storage.getItem('password');
     db = storage.getItem('db');
     stockInventoryLineRes =
         getStockInventoryLineById(widget.stockInventoryLine["id"]);
-    stockInventoryLineRes.then((stockInventoryLine) {
+    stockInventoryLineRes.then((res) {
+      this.stockInventoryLine = res;
       setState(() {
         this.loading = true;
       });
+
       this.productTextController.text =
-          stockInventoryLine.getResult()['records'][0]['product_id'][1];
-      this.teoricalTextController.text = stockInventoryLine
+          this.stockInventoryLine.getResult()['records'][0]['product_id'][1];
+      this.teoricalTextController.text = this
+          .stockInventoryLine
           .getResult()['records'][0]['theoretical_qty']
           .toString();
-      this.realTextController.text = stockInventoryLine
+      this.realTextController.text = this
+          .stockInventoryLine
           .getResult()['records'][0]['product_qty']
           .toString();
+      if (this.initRealQty == null) {
+        this.initRealQty =
+            this.stockInventoryLine.getResult()['records'][0]['product_qty'];
+      }
 // this.teoricalTextController.text = stockInventoryLine.getResult()['records'][0]['']
       // print(stockInventoryLine.getResult()['records'][0]['product_id'][1]);
       // this.productTextController.text =
       //     stockInventoryLine.getResult()['records']['product_id'][1];
-      print(stockInventoryLine.getResult());
     });
   }
 
@@ -211,6 +220,113 @@ class _UpdateProductState extends State<UpdateProduct> {
 
   @override
   Widget build(BuildContext context) {
+    void _showDialogConfirmSuccessful(String product, String code) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: new Text("Actualización exitosa"),
+            content: new Text(product),
+            actions: <Widget>[
+              new FlatButton(
+                child: new Text("Aceptar"),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        },
+      );
+    }
+
+    void _showDialogConfirmUnsuccessful() {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: new Text("Registro no actualizado"),
+            content: new Text("Actualice la cantidad a confirmar"),
+            actions: <Widget>[
+              new FlatButton(
+                child: new Text("Aceptar"),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        },
+      );
+    }
+
+    confirmarBtn() async {
+      OdooResponse res;
+      if (this.theresChange == true) {
+        client = new OdooClient('https://odoo.nkodexsoft.com');
+        final auth =
+            await client.authenticate(this.user, this.password, this.db);
+
+        if (auth.isSuccess) {
+          print(this.stockInventoryLine.getResult()['records']);
+          if (this.product == null) {
+            res = await client.write("stock.inventory.line", [
+              this.stockInventoryLine.getResult()['records'][0]['id']
+            ], {
+              "product_id": this.stockInventoryLine.getResult()['records'][0]
+                  ["product_id"][0],
+              "location_id": this.stockInventoryLine.getResult()['records'][0]
+                  ["inventory_location_id"][0],
+              "product_uom_id": this.stockInventoryLine.getResult()['records']
+                  [0]["product_uom_id"][0],
+              "product_qty": double.parse(this.realTextController.text)
+            });
+            print({
+              "product_id": this.stockInventoryLine.getResult()['records'][0]
+                  ["inventory_id"][0],
+              "location_id": this.stockInventoryLine.getResult()['records'][0]
+                  ["inventory_location_id"][0],
+              "product_uom_id": this.stockInventoryLine.getResult()['records']
+                  [0]["product_uom_id"][0],
+              "product_qty": double.parse(this.realTextController.text)
+            });
+          } else {
+            print({
+              "product_id": this.product["id"],
+              "location_id": this.stockInventoryLine.getResult()['records'][0]
+                  ["inventory_location_id"][0],
+              "product_uom_id": this.product["uom_id"][0],
+              "product_qty": double.parse(this.realTextController.text)
+            });
+            res = await client.write("stock.inventory.line", [
+              this.stockInventoryLine.getResult()['records'][0]['id']
+            ], {
+              "product_id": this.product["id"],
+              "location_id": this.stockInventoryLine.getResult()['records'][0]
+                  ["product_uom_id"][0],
+              "product_uom_id": this.product["uom_id"][0],
+              "product_qty": double.parse(this.realTextController.text)
+            });
+          }
+          print({'res.getResult()1', res.getError()});
+          if (!res.hasError()) {
+            if (res.getResult()) {
+              // _showDialogConfirmSuccessful(
+              //     this.product['display_name'], this.product['barcode']);
+            } else {}
+            Navigator.pop(context);
+            return res;
+          } else {
+            return res;
+          }
+        }
+      } else {
+        _showDialogConfirmUnsuccessful();
+      }
+      print({'res.getResult()2', res.getResult()});
+    }
+
+    ;
     var container = Container(
       child: Column(
         children: <Widget>[
@@ -221,27 +337,20 @@ class _UpdateProductState extends State<UpdateProduct> {
               child: Column(
                 children: <Widget>[
                   TypeAheadField(
-                    debounceDuration: Duration(milliseconds: 50),
+                    debounceDuration: Duration(milliseconds: 1000),
+                    hideOnEmpty: true,
+                    getImmediateSuggestions: false,
                     textFieldConfiguration: TextFieldConfiguration(
                       enabled: this.productEnable,
-                      autofocus: true,
                       controller: productTextController,
                       decoration: InputDecoration(
-                          // suffix: IconButton(
-                          //   icon: Icon(Icons.clear),
-                          //   onPressed: () {
-                          //     productTextController.clear();
-                          //   },
-                          // ),
-                          hasFloatingPlaceholder: true,
-                          labelText: 'Producto'),
+                          hasFloatingPlaceholder: true, labelText: 'Producto'),
                     ),
                     suggestionsCallback: (pattern) async {
                       final data = await getOdooProductsProducts(pattern);
                       return data.getResult()['records'];
                     },
                     itemBuilder: (context, product) {
-                      this.product = product;
                       return ListTile(
                         leading: Icon(Icons.shopping_cart),
                         title: Text(product['display_name']),
@@ -249,26 +358,20 @@ class _UpdateProductState extends State<UpdateProduct> {
                       );
                     },
                     onSuggestionSelected: (product) async {
+                      this.product = product;
                       final data = await getStockInventoryLine(product['id']);
-                      print({'product', data.getResult()['records']});
-                      print({
-                        'getStockInventoryLine',
-                        data.getResult()['records']
-                      });
 
                       // TODO: Si es vacio debe de generar un dialogo mostrando el error, "Ha sucedido un error, vuelve a intentarlo"
-                      // this.serverProvider.stockInventoryLine =
-                      //     data.getResult()['records'];
-
-                      productTextController.text = product['name'];
+                      setState(() {
+                        this.productEnable = false;
+                      });
+                      productTextController.text = product['display_name'];
 
                       teoricalTextController.text = widget
                           .stockInventoryLine['theoretical_qty']
                           .toString();
                       realTextController.text =
                           widget.stockInventoryLine['product_qty'].toString();
-
-                      // productTextController.text[]
                     },
                   ),
                   TextField(
@@ -279,10 +382,20 @@ class _UpdateProductState extends State<UpdateProduct> {
                     controller: teoricalTextController,
                   ),
                   TextField(
+                    autofocus: true,
+                    keyboardType: TextInputType.number,
                     decoration: InputDecoration(
                         hasFloatingPlaceholder: true,
                         labelText: 'Cantidad Real'),
                     controller: realTextController,
+                    onChanged: (value) {
+                      if (double.parse(this.realTextController.text) !=
+                          this.initRealQty) {
+                        setState(() {
+                          this.theresChange = true;
+                        });
+                      }
+                    },
                   ),
                   RaisedButton(
                     color: Colors.red,
@@ -301,6 +414,7 @@ class _UpdateProductState extends State<UpdateProduct> {
                       ],
                     ),
                     onPressed: () {
+                      this.theresChange = true;
                       setState(() {
                         this.productEnable = true;
                       });
@@ -320,7 +434,10 @@ class _UpdateProductState extends State<UpdateProduct> {
                 constraints: BoxConstraints.tight(
                   Size(MediaQuery.of(context).size.width / 2, 60),
                 ),
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.pop(context);
+                  // _showDialogConfirmSuccessful();
+                },
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
@@ -328,37 +445,14 @@ class _UpdateProductState extends State<UpdateProduct> {
                         style: TextStyle(fontWeight: FontWeight.w800))
                   ],
                 ),
-                // shape: new CircleBorder(),
                 elevation: 5,
               ),
               RawMaterialButton(
-                fillColor: Colors.orange,
+                fillColor: this.theresChange ? Colors.orange : Colors.grey,
                 constraints: BoxConstraints.tight(
                   Size(MediaQuery.of(context).size.width / 2, 60),
                 ),
-                onPressed: () async {
-                  OdooResponse response;
-                  client = new OdooClient('https://odoo.nkodexsoft.com');
-
-                  final auth = await client.authenticate(serverProvider.userDB,
-                      serverProvider.passwordDB, serverProvider.selectedDB);
-
-                  if (auth.isSuccess) {
-                    final res = await client.write("stock.inventory.line", [
-                      this.serverProvider.stockInventoryLine[0]['id']
-                    ], {
-                      "product_id": this.serverProvider.productProduct["id"],
-                      "location_id": 15,
-                      "product_uom_id": this.product["uom_id"][0]
-                    });
-
-                    if (!res.hasError()) {
-                      return res;
-                    } else {
-                      return res;
-                    }
-                  }
-                },
+                onPressed: theresChange ? confirmarBtn : null,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
@@ -367,7 +461,6 @@ class _UpdateProductState extends State<UpdateProduct> {
                             fontWeight: FontWeight.w800, color: Colors.white))
                   ],
                 ),
-                // shape: new CircleBorder(),
                 elevation: 5,
               ),
             ],
@@ -384,16 +477,5 @@ class _UpdateProductState extends State<UpdateProduct> {
         child: Text('Cargando.......'),
       );
     }
-    // return FutureBuilder(
-    //     future: this.stockInventoryLineRes,
-    //     builder: (context, AsyncSnapshot<OdooResponse> snapshot) {
-    //       if (snapshot.connectionState == ConnectionState.done) {
-    //         return container;
-    //       } else {
-    //         return Container(
-    //           child: Text('Cargando...'),
-    //         );
-    //       }
-    //     });
   }
 }
