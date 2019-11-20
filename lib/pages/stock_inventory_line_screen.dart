@@ -10,6 +10,7 @@ import 'package:provider/provider.dart';
 import 'package:stockscanner/pages/add_product.dart';
 import 'package:stockscanner/pages/update_product.dart';
 import 'package:stockscanner/provider/server_provider.dart';
+import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 
 class StockInventoryLineScreen extends StatelessWidget {
   int stockInventoryId;
@@ -22,6 +23,16 @@ class StockInventoryLineScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text('Inventario'),
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(Icons.add_to_photos),
+            onPressed: () async {
+              final barcodeScanRes = await FlutterBarcodeScanner.scanBarcode(
+                  "#ff6666", "Cancel", true, ScanMode.BARCODE);
+              print(barcodeScanRes);
+            },
+          )
+        ],
       ),
       body: StockInventoryLineListView(
         inventoryId: inventoryId,
