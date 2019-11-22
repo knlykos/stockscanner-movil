@@ -139,12 +139,13 @@ class _StockInventoryLineListViewState
           if (snapshot.connectionState == ConnectionState.done) {
             final records = snapshot.data.getResult()['records'];
             final length = snapshot.data.getResult()['length'];
+            print(length);
             return ListView.builder(
               itemCount: length,
               itemBuilder: (context, index) {
                 return ListTile(
-                  title: Text(records[index]['product'][0]['display_name']),
-                  subtitle: Text(records[index]['product'][0]['create_date']),
+                  title: Text(records[index]['product_id'][1]),
+                  subtitle: Text(records[index]['product_qty'].toString()),
                   trailing: Icon(Icons.edit),
                   onTap: () {
                     // print({'records[index]', records[index]});
