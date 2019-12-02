@@ -180,6 +180,11 @@ class _StockInventoryLineListViewState
             style: TextStyle(fontSize: 15, height: 1),
             focusNode: myFocusNode,
             autofocus: true,
+            onChanged: (e) {
+              print(e);
+            },
+            onSubmitted: (e) {
+            },
           ),
         ),
         Flexible(

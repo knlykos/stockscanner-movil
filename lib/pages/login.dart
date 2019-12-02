@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:localstorage/localstorage.dart';
-import 'package:odoo_api/odoo_api.dart';
-import 'package:odoo_api/odoo_user_response.dart';
-import 'package:odoo_api/odoo_version.dart';
 import 'package:provider/provider.dart';
 import 'package:stockscanner/api/server_api.dart';
+import 'package:stockscanner/api/server_conn.dart';
 import 'package:stockscanner/pages/stock_inventory_screen.dart';
 import 'package:stockscanner/provider/server_provider.dart';
 
@@ -15,9 +13,9 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   // OdooClient client;
-  final odooUrl = TextEditingController(text: 'https://odoo.nkodexsoft.com');
-  final odooUser = TextEditingController(text: 'administrador');
-  final odooPassword = TextEditingController(text: '123456');
+  final odooUrl = TextEditingController(text: 'https://nkodex.odoo.com');
+  final odooUser = TextEditingController(text: 'nlopezg87@gmail.com');
+  final odooPassword = TextEditingController(text: 'Nefo123..');
   final odooDB = TextEditingController();
   final LocalStorage storage = new LocalStorage('inventory-scanner');
   String dbSelected;
@@ -56,19 +54,16 @@ class _LoginScreenState extends State<LoginScreen> {
 
     // final GlobalKey<ScaffoldState> _scaffoldKey =
     //     new GlobalKey<ScaffoldState>();
-    serverAuth() async {
-      var server = new ServerApi(odooUrl.text);
-      var authCallback =
-          await server.auth(odooUser.text, odooPassword.text, dbSelected);
-      serverProvider.setAuthParams(
-          odooUser.text, odooPassword.text, dbSelected);
-      final LocalStorage storage = new LocalStorage('auth');
-      storage.setItem('user', odooUser.text);
-      storage.setItem('password', odooPassword.text);
-      storage.setItem('db', dbSelected);
-      serverProvider.serverUrl = odooUrl.text;
-      print({'isSuccess', authCallback.isSuccess});
-      serverProvider.isAuth = authCallback.isSuccess;
+    Future<bool> serverAuth() async {
+      var serverConn = new ServerConn(
+          user: odooUser.text,
+          password: odooPassword.text,
+          database: dbSelected,
+          host: odooUrl.text);
+
+      final auth = await serverConn.auth();
+      print(auth);
+      return auth;
     }
 
     return Scaffold(body: Builder(
@@ -149,8 +144,10 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       child: Text('Login'),
                       onPressed: () async {
-                        await serverAuth();
-                        if (serverProvider.isAuth) {
+                        final isAuth = await serverAuth();
+                        print(isAuth);
+
+                        if (isAuth) {
                           Navigator.push(
                               context,
                               MaterialPageRoute(

@@ -8,6 +8,8 @@ import 'package:odoo_api/odoo_user_response.dart';
 import 'package:odoo_api/odoo_version.dart';
 import 'package:provider/provider.dart';
 import 'package:stockscanner/api/server_api.dart';
+import 'package:stockscanner/api/server_conn.dart';
+import 'package:stockscanner/api/stock_inventory.dart';
 import 'package:stockscanner/pages/home_page.dart';
 import 'package:stockscanner/pages/stock_inventory_line_screen.dart';
 import 'package:stockscanner/provider/models/stock_inventory_model.dart';
@@ -92,31 +94,23 @@ class _StockInventoryListViewState extends State<StockInventoryListView> {
   @override
   Widget build(BuildContext context) {
     final serverProvider = Provider.of<ServerProvider>(context);
-    Future<OdooResponse> serverStart() async {
-      final serverApi = new ServerApi(serverProvider.serverUrl);
-      // print(serverProvider.userDB);
-      // print(serverProvider.passwordDB);
-      // print(serverProvider.selectedDB);
-      final authRes = await serverApi.auth(serverProvider.userDB,
-          serverProvider.passwordDB, serverProvider.selectedDB);
-      String model = 'stock.inventory';
-      List<dynamic> domain = [
-        ['state', '=', 'confirm']
-      ];
-      final filter = null;
-      // print({'authRes', authRes.isSuccess});
-      if (authRes.isSuccess) {
-        return await serverApi.searchRead(model, domain, filter);
-      }
+    Future<List<Map<String, dynamic>>> serverStart() async {
+      final data = getStockInventory();
+      print(data);
+      return data;
     }
+
+    // return Container(
+    //   child: Text('Hola'),
+    // );
 
     return FutureBuilder(
       future: serverStart(),
-      builder: (context, AsyncSnapshot<OdooResponse> snapshot) {
+      builder: (context, AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
         if (snapshot.connectionState == ConnectionState.done) {
           // print(snapshot.data.getResult()['records']);
-          final records = snapshot.data.getResult()['records'];
-          final length = snapshot.data.getResult()['length'];
+          final records = snapshot.data;
+          final length = snapshot.data.length;
           // print(length);
           return ListView.builder(
             itemCount: length,
@@ -140,43 +134,6 @@ class _StockInventoryListViewState extends State<StockInventoryListView> {
         } else {
           return Container(child: Text('Cargando'));
         }
-      },
-    );
-
-    return Consumer<ServerProvider>(
-      builder: (context, server, child) {
-        final domain = [
-          ['state', '=', 'confirm']
-        ];
-        final fields = null;
-        // server.searchRead('stock.inventory', domain, fields).then((onValue) {
-        //   server.response = onValue.getResult()['records'];
-        //   print(server.response);
-        //   server.notifyListeners();
-        // });
-        // return server.response.length == null || server.response.length == 0
-        //     ? Container(
-        //         child: Text('Cargando'),
-        //       )
-        //     : ListView.builder(
-        //         itemCount: server.response.length,
-        //         itemBuilder: (context, index) {
-        //           return ListTile(
-        //             trailing: Icon(Icons.chevron_right),
-        //             title: Text(server.response[index]['name']),
-        //             subtitle: Text(new DateFormat.MMMMEEEEd().format(
-        //                 DateTime.parse(server.response[index]['date']))),
-        //             onTap: () {
-        //               Navigator.push(
-        //                   context,
-        //                   MaterialPageRoute(
-        //                       builder: (context) => StockInventoryLineScreen(
-        //                             inventoryId: server.response[index]['id'],
-        //                           )));
-        //             },
-        //           );
-        //         },
-        //       );
       },
     );
   }

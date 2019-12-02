@@ -277,7 +277,10 @@ class _UpdateProductState extends State<UpdateProduct> {
             await client.authenticate(this.user, this.password, this.db);
 
         if (auth.isSuccess) {
-          print(this.stockInventoryLine.getResult()['records']);
+          print({
+            'stockInventoryLine',
+            this.stockInventoryLine.getResult()['records']
+          });
           if (this.product == null) {
             res = await client.write("stock.inventory.line", [
               this.stockInventoryLine.getResult()['records'][0]['id']
@@ -285,7 +288,7 @@ class _UpdateProductState extends State<UpdateProduct> {
               "product_id": this.stockInventoryLine.getResult()['records'][0]
                   ["product_id"][0],
               "location_id": this.stockInventoryLine.getResult()['records'][0]
-                  ["inventory_location_id"][0],
+                  ["location_id"][0],
               "product_uom_id": this.stockInventoryLine.getResult()['records']
                   [0]["product_uom_id"][0],
               "product_qty": double.parse(this.realTextController.text)
@@ -294,7 +297,7 @@ class _UpdateProductState extends State<UpdateProduct> {
               "product_id": this.stockInventoryLine.getResult()['records'][0]
                   ["inventory_id"][0],
               "location_id": this.stockInventoryLine.getResult()['records'][0]
-                  ["inventory_location_id"][0],
+                  ["location_id"][0],
               "product_uom_id": this.stockInventoryLine.getResult()['records']
                   [0]["product_uom_id"][0],
               "product_qty": double.parse(this.realTextController.text)
@@ -303,7 +306,7 @@ class _UpdateProductState extends State<UpdateProduct> {
             print({
               "product_id": this.product["id"],
               "location_id": this.stockInventoryLine.getResult()['records'][0]
-                  ["inventory_location_id"][0],
+                  ["location_id"][0],
               "product_uom_id": this.product["uom_id"][0],
               "product_qty": double.parse(this.realTextController.text)
             });
