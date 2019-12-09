@@ -39,30 +39,26 @@ class _LoginScreenState extends State<LoginScreen> {
         ));
 
     void getDatabaseList() async {
-      try {
-        var server = new ServerApi(odooUrl.text);
-        var dbs = await server.getDatabases();
+      serverProvider.getInstance(host: odooUrl.text);
+      var dbs = await serverProvider.getDatabases();
 
-        print(dbs);
-        setState(() {
-          this.odooDBList = dbs;
-        });
-      } catch (e) {
-        // print(e);
-      }
+      print(dbs);
+      setState(() {
+        this.odooDBList = dbs;
+      });
     }
 
     // final GlobalKey<ScaffoldState> _scaffoldKey =
     //     new GlobalKey<ScaffoldState>();
     Future<bool> serverAuth() async {
-      var serverConn = new ServerConn(
+      serverProvider.getInstance(
           user: odooUser.text,
           password: odooPassword.text,
           database: dbSelected,
           host: odooUrl.text);
 
-      final auth = await serverConn.auth();
-      print(auth);
+      final auth = await serverProvider.authentication();
+
       return auth;
     }
 

@@ -1,12 +1,19 @@
-import 'package:stockscanner/api/server_conn.dart';
+import 'package:stockscanner/provider/server_provider.dart';
 
-Future<List<dynamic>> getStockInventory() async {
+Future<List<dynamic>> getStockInventory(ServerProvider serverProvider) async {
   List<dynamic> response = [];
-  final serverConn = ServerConn();
-
 
   final stockInventory =
-      await serverConn.client.searchRead('stock.inventory', ["state", "=", "confirm"], ["name","date","location_ids","product_ids","company_id","state"]);
+      await serverProvider.client.searchRead('stock.inventory', [
+    ["state", "=", "confirm"]
+  ], [
+    "name",
+    "date",
+    "location_ids",
+    "product_ids",
+    "company_id",
+    "state"
+  ]);
 
   if (!stockInventory.hasError()) {
     response = stockInventory.getResult()['records'];

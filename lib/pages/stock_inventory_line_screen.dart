@@ -7,6 +7,7 @@ import 'package:odoo_api/odoo_api_connector.dart';
 import 'package:odoo_api/odoo_user_response.dart';
 import 'package:odoo_api/odoo_version.dart';
 import 'package:provider/provider.dart';
+import 'package:stockscanner/api/stock_inventory_line.dart';
 import 'package:stockscanner/pages/add_product.dart';
 import 'package:stockscanner/pages/update_product.dart';
 import 'package:stockscanner/provider/server_provider.dart';
@@ -60,7 +61,7 @@ class _StockInventoryLineListViewState
   int length;
   TextEditingController searchController;
   ServerProvider serverProvider;
-  Future<OdooResponse> productList;
+  Future<List<dynamic>> productList;
   FocusNode myFocusNode;
 
   Image imageFromBase64String(String base64String) {
@@ -88,67 +89,39 @@ class _StockInventoryLineListViewState
     super.dispose();
   }
 
-  Future<OdooResponse> getOdooStockInventoryLine() async {
-    OdooResponse response;
-    client = new OdooClient('https://odoo.nkodexsoft.com');
-
-    final auth = await client.authenticate(serverProvider.userDB,
-        serverProvider.passwordDB, serverProvider.selectedDB);
-    // print(auth.isSuccess);
-    if (auth.isSuccess) {
-      // print(auth.getUser());
-      final domain = [
-        ['inventory_id', '=', widget.inventoryId]
-      ];
-      // print(domain);
-      final fields = null;
-      final res = await client.searchRead(
-        "stock.inventory.line",
-        domain,
-        fields,
-      );
-      if (!res.hasError()) {
-        // print(res.getResult());
-        for (var entry in res.getResult()['records'].asMap().entries) {
-          // print({'entry', entry.value['inventory_id'][0]});
-          final domain = [
-            ['id', '=', entry.value['product_id'][0]]
-          ];
-          // print(domain);
-          const fields = null;
-          OdooResponse product =
-              await client.searchRead('product.product', domain, fields);
-          res.getResult()['records'][0]['product'] =
-              product.getResult()['records'];
-        }
-        return res;
-      } else {
-        return res;
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    // getOdooStockInventoryLine();
-    serverProvider = Provider.of<ServerProvider>(context);
-    productList ??= getOdooStockInventoryLine();
+    final serverProvider = Provider.of<ServerProvider>(context);
+    getStockInventoryLineState() async {
+      final result = await getSetBarcodeViewState(
+          serverProvider: serverProvider, stockInventoryId: widget.inventoryId);
+      final barcodes = await getAllBarcodes(serverProvider);
+      print({'barcodes', barcodes});
+      return result;
+    }
+
+    getStockInventoryLineState();
+    // return Container();
+
+    productList ??= getStockInventoryLineState();
     var futureBuilder = FutureBuilder(
         future: productList,
-        builder: (context, AsyncSnapshot<OdooResponse> snapshot) {
+        builder: (context, AsyncSnapshot<dynamic> snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
-            final records = snapshot.data.getResult()['records'];
-            final length = snapshot.data.getResult()['length'];
+            final records = snapshot.data[0]['line_ids'];
+            final length = snapshot.data[0]['line_ids'].length;
+            print(snapshot.data[0]['line_ids']);
+            print(json.encode(snapshot.data));
             print(length);
             return ListView.builder(
               itemCount: length,
               itemBuilder: (context, index) {
                 return ListTile(
-                  title: Text(records[index]['product_id'][1]),
-                  subtitle: Text(records[index]['product_qty'].toString()),
+                  title: Text(records[index]['product_id']['display_name']),
+                  subtitle: Text(
+                      'Cantidad ${records[index]['product_qty'].toString()}'),
                   trailing: Icon(Icons.edit),
                   onTap: () {
-                    // print({'records[index]', records[index]});
                     Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -183,8 +156,7 @@ class _StockInventoryLineListViewState
             onChanged: (e) {
               print(e);
             },
-            onSubmitted: (e) {
-            },
+            onSubmitted: (e) {},
           ),
         ),
         Flexible(

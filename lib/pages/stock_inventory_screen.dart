@@ -94,9 +94,8 @@ class _StockInventoryListViewState extends State<StockInventoryListView> {
   @override
   Widget build(BuildContext context) {
     final serverProvider = Provider.of<ServerProvider>(context);
-    Future<List<Map<String, dynamic>>> serverStart() async {
-      final data = getStockInventory();
-      print(data);
+    Future<List<dynamic>> serverStart() async {
+      final data = await getStockInventory(serverProvider);
       return data;
     }
 
@@ -106,7 +105,7 @@ class _StockInventoryListViewState extends State<StockInventoryListView> {
 
     return FutureBuilder(
       future: serverStart(),
-      builder: (context, AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
+      builder: (context, AsyncSnapshot<List<dynamic>> snapshot) {
         if (snapshot.connectionState == ConnectionState.done) {
           // print(snapshot.data.getResult()['records']);
           final records = snapshot.data;
@@ -115,10 +114,9 @@ class _StockInventoryListViewState extends State<StockInventoryListView> {
           return ListView.builder(
             itemCount: length,
             itemBuilder: (context, index) {
-              // print(records);
               return ListTile(
-                title: Text(records[index]['display_name']),
-                subtitle: Text(records[index]['create_date']),
+                title: Text(records[index]['name']),
+                subtitle: Text(records[index]['date']),
                 trailing: Icon(Icons.chevron_right),
                 onTap: () {
                   Navigator.push(
